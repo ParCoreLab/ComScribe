@@ -17,9 +17,13 @@
 
 To obtain the communication matrices of your application (`app`):
 
-1. Put `commscribe.py` in the same directory with `app`
-2. `python comscribe.py './app [parameters]'`
-3. todo
+1. Put `comscribe.py` in the same directory with `app`
+2. `python comscribe.py -g <num_gpus> -s log|linear -i <cmd_to_run>`
+    1. `-g` lets our tool know how many GPUs will be used, however note that if the application to be run requires such a parameter too, it must be explicitly specified (see `-i` below).
+    2. `-s` can be `log` for log scale or `linear` for linear scale for the output figures
+    3. `-i` takes the input command as a string such as `-i './app --foo 20 --bar 5'`
+    
+3. The communication matrix for a communication type is only generated if it is detected, e.g. if there are no Unified Memory transfers then there will not be any output regarding Unified Memory transfers. For the types of communication detected, the generated figures are saved as PDF files in the directory of the script.
 
 ## Installation
 
