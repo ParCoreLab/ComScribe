@@ -442,7 +442,7 @@ def plot_comm_matrix(comm_matrix, num_devices, matrix_type, scale='linear'):
     plt.yticks(np.arange(0.5, num_devices + 1, 1), labels=labels)
     plt.tick_params(labelsize=12)
     plt.tight_layout()
-    plt.savefig('{}.pdf'.format(matrix_type))
+    plt.savefig('{}.png'.format(matrix_type))
 
 def plot_bar_chart(matrix, n_groups):
     plt.rcParams["figure.figsize"] = (8,6)
@@ -520,13 +520,13 @@ def main(argv):
             scale = arg
     
     # # Run app with GPU-Trace
-    gpu_trace_cmd = "nvprof --print-gpu-trace --csv --log-file gpu_trace.csv {}".format(application)
-    subprocess.run([gpu_trace_cmd], shell=True)
+    # gpu_trace_cmd = "nvprof --print-gpu-trace --csv --log-file gpu_trace.csv {}".format(application)
+    # subprocess.run([gpu_trace_cmd], shell=True)
     gpu_trace_file = "gpu_trace.csv"
 
     # # Run app with Metric Trace
-    metric_trace_cmd = "nvprof --print-gpu-trace --metrics nvlink_user_data_received,nvlink_user_data_transmitted,sysmem_read_bytes,sysmem_write_bytes --csv --log-file metric_trace.csv {}".format(application)
-    subprocess.run([metric_trace_cmd], shell=True)
+    # metric_trace_cmd = "nvprof --print-gpu-trace --metrics nvlink_user_data_received,nvlink_user_data_transmitted,sysmem_read_bytes,sysmem_write_bytes --csv --log-file metric_trace.csv {}".format(application)
+    # subprocess.run([metric_trace_cmd], shell=True)
 
     metric_trace_file = "metric_trace.csv"
     
