@@ -414,7 +414,6 @@ class ZeroCopyInfoGenerator():
         return self.num_bytes_comm_matrix, self.num_times_comm_matrix
 
 def plot_comm_matrix(comm_matrix, num_devices, matrix_type, scale='linear'):
-    
     colormap = plt.cm.ocean_r
     plt.figure(figsize=(9, 7))
     # # For Linear Scale
@@ -447,7 +446,6 @@ def plot_comm_matrix(comm_matrix, num_devices, matrix_type, scale='linear'):
 
 def plot_bar_chart(matrix, n_groups):
     plt.rcParams["figure.figsize"] = (8,6)
-
     zcm_read = []
     sysmem_write = []
     zcm_write = []
@@ -457,7 +455,6 @@ def plot_bar_chart(matrix, n_groups):
         zcm_write.append(matrix[i][1])
         sysmem_read.append(matrix[i][2])
         sysmem_write.append(matrix[i][3])
-
 
     fig, ax = plt.subplots(figsize=(8,6))
     index = np.arange(n_groups)
@@ -496,15 +493,12 @@ def plot_bar_chart(matrix, n_groups):
     plt.tight_layout()
     plt.savefig('zcm_bar_chart.pdf')
 
-
 def merge_matrices(h2d_comm_matrix, p2p_comm_matrix):
     for x in range(0, len(p2p_comm_matrix)):
         for y in range(0, len(p2p_comm_matrix)):
-            
             h2d_comm_matrix[x + 1][y + 1] = p2p_comm_matrix[x][y]
 
     return h2d_comm_matrix
-
 
 def main(argv):
     num_devices = 0
@@ -536,7 +530,7 @@ def main(argv):
 
     metric_trace_file = "metric_trace.csv"
     
-     # # Unified Memory Profiling
+     # # Unified Memory
     h2d_um_memcpy_comm = H2DUnifiedMemoryCommMatrixGenerator(num_devices)
     h2d_um_num_bytes_comm_matrix, h2d_um_num_times_comm_matrix = h2d_um_memcpy_comm.generate_comm_matrix(gpu_trace_file)
     p2p_um_memcpy_comm = P2PUnifiedMemoryCommMatrixGenerator(num_devices)
@@ -555,7 +549,7 @@ def main(argv):
         plot_comm_matrix(all_um_num_bytes_comm_matrix, num_devices, outputfile_um_num_bytes_comm_matrix, scale)
         plot_comm_matrix(all_um_num_times_comm_matrix, num_devices, outputfile_um_num_times_comm_matrix, scale)
 
-    # # Explicit trasfers Profiling
+    # # Explicit Transfers
     h2d_et_memcpy_comm = H2DCudaMemcpyCommMatrixGenerator(num_devices)
     h2d_et_num_bytes_comm_matrix, h2d_et_num_times_comm_matrix = h2d_et_memcpy_comm.generate_comm_matrix(gpu_trace_file)
     p2p_et_memcpy_comm = P2PCudaMemcpyCommMatrixGenerator(num_devices)
@@ -574,7 +568,7 @@ def main(argv):
         plot_comm_matrix(all_et_num_bytes_comm_matrix, num_devices, outputfile_et_num_bytes_comm_matrix, scale)
         plot_comm_matrix(all_et_num_times_comm_matrix, num_devices, outputfile_et_num_times_comm_matrix, scale)
 
-    # # ZeroCopy Memory Profiling
+    # # Zero-Copy Memory Transfers
     all_zc_comm = ZeroCopyInfoGenerator(num_devices)
     all_zc_num_bytes_comm_matrix, all_zc_num_times_comm_matrix = all_zc_comm.generate_comm_matrix(metric_trace_file)
 
