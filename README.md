@@ -1,6 +1,6 @@
 # ComScribe
 
-![TransformerExample](/transformer.PNG | width=100)
+<img src="/transformer.PNG" width="120">
 
 ***ComScribe*** is a tool that identifies communication among all GPU-GPU and CPU-GPU pairs in a single-node multi-GPU system.
 
