@@ -7,10 +7,10 @@
 
 ***ComScribe*** is a tool that identifies communication among all GPU-GPU and CPU-GPU pairs in a single-node multi-GPU system.
 
-- [Usage](##Usage) 
-- [Installation](##Installation)
-- [Benchmarks](##Benchmarks)
-- [Publication](##Publication)
+- [Usage](#usage) 
+- [Installation](#installation)
+- [Benchmarks](#benchmarks)
+- [Publication](#publication)
    
    
 ## Usage
