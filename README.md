@@ -59,7 +59,7 @@ We have used our tool in an NVIDIA V100 DGX2 system with up to 16 GPUs using CUD
 
 Gives the output:
 <p align="center">
-  <img src="/commscope_zcm_read.PNG" width="320">
+  <img src="/commscope_zcm_read.png" width="320">
 </p>
 
 ## Publication:
