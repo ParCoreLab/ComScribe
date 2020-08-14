@@ -20,8 +20,8 @@ To obtain the communication matrices of your application (`app`):
 1. Put `comscribe.py` in the same directory with `app`
 2. `python comscribe.py -g <num_gpus> -s log|linear -i <cmd_to_run>`
     1. `-g` lets our tool know how many GPUs will be used, however note that if the application to be run requires such a parameter too, it must be explicitly specified (see `-i` below).
-    2. `-s` can be `log` for log scale or `linear` for linear scale for the output figures
-    3. `-i` takes the input command as a string such as `-i './app --foo 20 --bar 5'`
+    2. `-s` can be `log` for log scale or `linear` for linear scale for the output figures.
+    3. `-i` takes the input command as a string such as: `-i './app --foo 20 --bar 5'`
     
 3. The communication matrix for a communication type is only generated if it is detected, e.g. if there are no Unified Memory transfers then there will not be any output regarding Unified Memory transfers. For the types of communication detected, the generated figures are saved as PDF files in the directory of the script.
 
@@ -38,7 +38,7 @@ You will need the following programs:
 No further installation is required.
 
 ## Benchmarks
-We have used our tool with the following benchmarks:
+We have used our tool in an NVIDIA V100 DGX2 system with up to 16 GPUs using CUDA v10.0.130 for the following benchmarks:
 * NVIDIA Monte Carlo Simluation of 2D Ising-GPU | [GitHub](https://github.com/NVIDIA/ising-gpu/tree/master/optimized)
 * NVIDIA Multi-GPU Jacobi Solver | [GitHub](https://github.com/NVIDIA/multi-gpu-programming-models/blob/master/single_threaded_copy/jacobi.cu)
 * Comm|Scope | [Paper](https://dl.acm.org/doi/10.1145/3297663.3310299) | [GitHub](https://github.com/c3sr/comm_scope)
@@ -53,7 +53,6 @@ We have used our tool with the following benchmarks:
     * Game Of Life | [GitHub](https://github.com/tbennun/mgbench/blob/master/src/L2/gol/main.cpp)
 * Eidetic 3D LSTM | [Paper](https://openreview.net/forum?id=B1lKS2AqtX) | [GitHub](https://github.com/google/e3d_lstm )
 * Transformer | [Paper](http://arxiv.org/abs/1706.03762) | [GitHub](https://github.com/tensorflow/tensor2tensor/)
-
 
 ## Publication:
 To be published as: _Akthar, P., Tezcan, E., Qararyah, F.Q., and Unat, D. "ComScribe: Identifying Intra-node GPU Communication"_
