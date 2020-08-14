@@ -1,2 +1,2 @@
 # ComScribe
- Identifying Intra-node GPUCommunication
+ Identifying Intra-node GPU Communication
