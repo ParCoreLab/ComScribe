@@ -54,7 +54,7 @@ We have used our tool in an NVIDIA V100 DGX2 system with up to 16 GPUs using CUD
 * Eidetic 3D LSTM | [Paper](https://openreview.net/forum?id=B1lKS2AqtX) | [GitHub](https://github.com/google/e3d_lstm )
 * Transformer | [Paper](http://arxiv.org/abs/1706.03762) | [GitHub](https://github.com/tensorflow/tensor2tensor/)
 
-### Example:
+### Example: _Comm|Scope Zero-copy Memory Read Micro-benchmark_
 `python3 comscribe.py -g 4 -i './scope --benchmark_filter="Comm_ZeroCopy_GPUToGPU_Read.*18.*" -n 0' -s log`
 
 Gives the output:
