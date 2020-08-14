@@ -13,11 +13,11 @@
 - [Publication](##Publication)
    
    
-##Usage
+## Usage
 
 to do
 
-##Installation
+## Installation
 
 You will need the following programs:
 
@@ -29,7 +29,7 @@ You will need the following programs:
 
 No further installation is required.
 
-##Benchmarks
+## Benchmarks
 We have used our tool with the following benchmarks:
 * NVIDIA Monte Carlo Simluation of 2D Ising-GPU | [GitHub](https://github.com/NVIDIA/ising-gpu/tree/master/optimized)
 * NVIDIA Multi-GPU Jacobi Solver | [GitHub](https://github.com/NVIDIA/multi-gpu-programming-models/blob/master/single_threaded_copy/jacobi.cu)
@@ -47,5 +47,5 @@ We have used our tool with the following benchmarks:
 * Transformer | [Paper](http://arxiv.org/abs/1706.03762) | [GitHub](https://github.com/tensorflow/tensor2tensor/)
 
 
-##Publication:
+## Publication:
 To be published as: _Akthar, P., Tezcan, E., Qararyah, F.Q., and Unat, D. "ComScribe: Identifying Intra-node GPU Communication"_
