@@ -65,8 +65,8 @@ Gives the output:
 ### Example: _Comm|Scope Unified Memory Full Duplex Micro-benchmark_
 `python3 comscribe.py -g 4 -i './scope --benchmark_filter="Comm_Demand_Duplex_GPUGPU.*18.*"' -s linear`
 <p align="center" float="left">
-  <img src="/um_num_bytes_comm_matrix.png" width="320" />
-  <img src="/um_num_times_comm_matrix.png" width="320" />
+  <img src="/um_num_bytes.png" width="320" />
+  <img src="/um_num_times.png" width="320" />
 </p>
 
 ### Example: _MGBench Full Duplex Micro-benchmark_
@@ -75,6 +75,14 @@ Gives the output:
 <p align="center" float="left">
   <img src="/mgbench_full_duplex_bytes.png" width="320" />
   <img src="/mgbench_full_duplex_times.png" width="320" />
+</p>
+
+### Example: _NVIDIA Monte Carlo Simluation of 2D Ising-GPU_
+`python3 comscribe.py -g 4 -i './cuIsing -y 32768 -x 65536 -n 128 -p 16 -d 4 -t 1.5' -s log`
+
+<p align="center" float="left">
+  <img src="/ising_gpu_num_bytes.png" width="320" />
+  <img src="/ising_gpu_num_times.png" width="320" />
 </p>
 
 
