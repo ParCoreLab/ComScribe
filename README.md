@@ -15,7 +15,11 @@
    
 ## Usage
 
-to do
+To obtain the communication matrices of your application (`app`):
+
+1. Put `commscribe.py` in the same directory with `app`
+2. `python comscribe.py './app [parameters]'`
+3. todo
 
 ## Installation
 
