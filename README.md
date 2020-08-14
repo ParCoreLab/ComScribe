@@ -18,7 +18,7 @@
 To obtain the communication matrices of your application (`app`):
 
 1. Put `comscribe.py` in the same directory with `app`
-2. `python comscribe.py -g <num_gpus> -s log|linear -i <cmd_to_run>`
+2. `python3 comscribe.py -g <num_gpus> -s log|linear -i <cmd_to_run>`
     1. `-g` lets our tool know how many GPUs will be used, however note that if the application to be run requires such a parameter too, it must be explicitly specified (see `-i` below).
     2. `-s` can be `log` for log scale or `linear` for linear scale for the output figures.
     3. `-i` takes the input command as a string such as: `-i './app --foo 20 --bar 5'`
@@ -31,7 +31,7 @@ You will need the following programs:
 
 - [Python](https://www.python.org/): ComScribe is a Python script. It uses several packages listed in [`requirements.txt`](/requirements.txt), which you can install via the command:
 
-`pip install requirements.txt`
+`pip3 install requirements.txt`
 
 - [nvprof](https://docs.nvidia.com/cuda/profiler-users-guide/index.html#nvprof-overview): ComScribe parses the outputs of NVIDIA's profiler *nvprof*, which is a light-weight command-line profiler available since CUDA 5.
 
@@ -54,5 +54,13 @@ We have used our tool in an NVIDIA V100 DGX2 system with up to 16 GPUs using CUD
 * Eidetic 3D LSTM | [Paper](https://openreview.net/forum?id=B1lKS2AqtX) | [GitHub](https://github.com/google/e3d_lstm )
 * Transformer | [Paper](http://arxiv.org/abs/1706.03762) | [GitHub](https://github.com/tensorflow/tensor2tensor/)
 
+### Example:
+`python3 comscribe.py -g 4 -i './scope --benchmark_filter="Comm_ZeroCopy_GPUToGPU_Read.*18.*" -n 0' -s log`
+
+Gives the output:
+<p align="center">
+  <img src="/commscope_zcm_read.PNG" width="320">
+</p>
+
 ## Publication:
-To be published as: _Akthar, P., Tezcan, E., Qararyah, F.Q., and Unat, D. "ComScribe: Identifying Intra-node GPU Communication"_
+To be published as: _Akthar, P., Tezcan, E., Qararyah, F.M., and Unat, D. "ComScribe: Identifying Intra-node GPU Communication"_
