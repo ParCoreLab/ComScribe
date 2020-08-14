@@ -64,17 +64,17 @@ Gives the output:
 
 ### Example: _Comm|Scope Unified Memory Full Duplex Micro-benchmark_
 `python3 comscribe.py -g 4 -i './scope --benchmark_filter="Comm_Demand_Duplex_GPUGPU.*18.*"' -s linear`
-<p float="left">
-  <img src="/um_num_bytes_comm_matrix.png" width="100" />
-  <img src="/um_num_times_comm_matrix.png" width="100" />
+<p align="center" float="left">
+  <img src="/um_num_bytes_comm_matrix.png" width="320" />
+  <img src="/um_num_times_comm_matrix.png" width="320" />
 </p>
 
 ### Example: _MGBench Full Duplex Micro-benchmark_
 `python3 comscribe.py -g 4 -i './fullduplex' -s linear`
 
-<p float="left">
-  <img src="/mgbench_full_duplex_bytes.png" width="100" />
-  <img src="/mgbench_full_duplex_times.png" width="100" />
+<p align="center" float="left">
+  <img src="/mgbench_full_duplex_bytes.png" width="320" />
+  <img src="/mgbench_full_duplex_times.png" width="320" />
 </p>
 
 
