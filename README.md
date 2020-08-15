@@ -1,7 +1,7 @@
 # ComScribe
 
 <p align="center">
-  <img src="/transformer.PNG" width="320">
+  <img src="/example_outputs/transformer.PNG" width="320">
 </p>
 
 
@@ -47,6 +47,11 @@ We have used our tool in an NVIDIA V100 DGX2 system with up to 16 GPUs using CUD
     * Half-Duplex with peer access | [GitHub](https://github.com/c3sr/comm_scope/blob/master/src/cudaMemcpyPeerAsync/gpu_to_gpu_peer.cpp)
     * Half-Duplex without peer access | [GitHub](https://github.com/c3sr/comm_scope/blob/master/src/cudaMemcpyPeerAsync/gpu_to_gpu.cpp)
     * Zero-copy Memory (both Read and Write benchmarks) | [GitHub](https://github.com/c3sr/comm_scope/blob/master/src/zerocopy/gpu_to_gpu.cu)
+    
+    Note: In order to run a benchmark with fixed iterations e.g. 100, modify the benchmark where it is registered in the src code with 
+    ```
+    benchmark::RegisterBenchmark(...)->SMALL_ARGS()->Iterations(100);
+    ```
 * MGBench | [Github](https://github.com/tbennun/mgbench)
     * Full-Duplex | [GitHub](https://github.com/tbennun/mgbench/blob/master/src/L1/fullduplex.cpp)
     * Scatter-Gather | [GitHub](https://github.com/tbennun/mgbench/blob/master/src/L1/scatter.cpp)
@@ -59,30 +64,30 @@ We have used our tool in an NVIDIA V100 DGX2 system with up to 16 GPUs using CUD
 
 Gives the output:
 <p align="center">
-  <img src="/commscope_zcm_read.png" width="320">
+  <img src="/example_outputs/commscope_zcm_read.png" width="320">
 </p>
 
 ### Example: _Comm|Scope Unified Memory Full Duplex Micro-benchmark_
 `python3 comscribe.py -g 4 -i './scope --benchmark_filter="Comm_Demand_Duplex_GPUGPU.*18.*"' -s linear`
 <p align="center" float="left">
-  <img src="/um_num_bytes.png" width="320" />
-  <img src="/um_num_times.png" width="320" />
+  <img src="/example_outputs/um_num_bytes.png" width="320" />
+  <img src="/example_outputs/um_num_times.png" width="320" />
 </p>
 
 ### Example: _MGBench Full Duplex Micro-benchmark_
 `python3 comscribe.py -g 4 -i './fullduplex' -s linear`
 
 <p align="center" float="left">
-  <img src="/mgbench_full_duplex_bytes.png" width="320" />
-  <img src="/mgbench_full_duplex_times.png" width="320" />
+  <img src="/example_outputs/mgbench_full_duplex_bytes.png" width="320" />
+  <img src="/example_outputs/mgbench_full_duplex_times.png" width="320" />
 </p>
 
 ### Example: _NVIDIA Monte Carlo Simluation of 2D Ising-GPU_
 `python3 comscribe.py -g 4 -i './cuIsing -y 32768 -x 65536 -n 128 -p 16 -d 4 -t 1.5' -s log`
 
 <p align="center" float="left">
-  <img src="/ising_gpu_num_bytes.png" width="320" />
-  <img src="/ising_gpu_num_times.png" width="320" />
+  <img src="/example_outputs/ising_gpu_num_bytes.png" width="320" />
+  <img src="/example_outputs/ising_gpu_num_times.png" width="320" />
 </p>
 
 
