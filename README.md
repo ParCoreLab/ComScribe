@@ -7,24 +7,11 @@
 
 ***ComScribe*** is a tool that identifies communication among all GPU-GPU and CPU-GPU pairs in a single-node multi-GPU system.
 
-- [Usage](#usage) 
 - [Installation](#installation)
+- [Usage](#usage) 
 - [Benchmarks](#benchmarks)
 - [Publication](#publication)
    
-   
-## Usage
-
-To obtain the communication matrices of your application (`app`):
-
-1. Put `comscribe.py` in the same directory with `app`
-2. `python3 comscribe.py -g <num_gpus> -s log|linear -i <cmd_to_run>`
-    1. `-g` lets our tool know how many GPUs will be used, however note that if the application to be run requires such a parameter too, it must be explicitly specified (see `-i` below).
-    2. `-s` can be `log` for log scale or `linear` for linear scale for the output figures.
-    3. `-i` takes the input command as a string such as: `-i './app --foo 20 --bar 5'`
-    
-3. The communication matrix for a communication type is only generated if it is detected, e.g. if there are no Unified Memory transfers then there will not be any output regarding Unified Memory transfers. For the types of communication detected, the generated figures are saved as PDF files in the directory of the script.
-
 ## Installation
 
 You will need the following programs:
@@ -37,6 +24,18 @@ You will need the following programs:
 
 No further installation is required.
 
+## Usage
+
+To obtain the communication matrices of your application (`app`):
+
+1. Put `comscribe.py` in the same directory with `app`
+2. `python3 comscribe.py -g <num_gpus> -s log|linear -i <cmd_to_run>`
+    1. `-g` lets our tool know how many GPUs will be used, however note that if the application to be run requires such a parameter too, it must be explicitly specified (see `-i` below).
+    2. `-s` can be `log` for log scale or `linear` for linear scale for the output figures.
+    3. `-i` takes the input command as a string such as: `-i './app --foo 20 --bar 5'`
+    
+3. The communication matrix for a communication type is only generated if it is detected, e.g. if there are no Unified Memory transfers then there will not be any output regarding Unified Memory transfers. For the types of communication detected, the generated figures are saved as PDF files in the directory of the script.
+
 ## Benchmarks
 We have used our tool in an NVIDIA V100 DGX2 system with up to 16 GPUs using CUDA v10.0.130 for the following benchmarks:
 * NVIDIA Monte Carlo Simluation of 2D Ising-GPU | [GitHub](https://github.com/NVIDIA/ising-gpu/tree/master/optimized)
@@ -48,7 +47,7 @@ We have used our tool in an NVIDIA V100 DGX2 system with up to 16 GPUs using CUD
     * Half-Duplex without peer access | [GitHub](https://github.com/c3sr/comm_scope/blob/master/src/cudaMemcpyPeerAsync/gpu_to_gpu.cpp)
     * Zero-copy Memory (both Read and Write benchmarks) | [GitHub](https://github.com/c3sr/comm_scope/blob/master/src/zerocopy/gpu_to_gpu.cu)
     
-    Note: In order to run a benchmark with fixed iterations e.g. 100, modify the benchmark where it is registered in the src code with 
+    Note: In order to run a benchmark with fixed iterations e.g. 100, in the source code of benchmark, replace it's registration with 
     ```
     benchmark::RegisterBenchmark(...)->SMALL_ARGS()->Iterations(100);
     ```
