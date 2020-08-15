@@ -61,13 +61,15 @@ We have used our tool in an NVIDIA V100 DGX2 system with up to 16 GPUs using CUD
 ### Example: _Comm|Scope Zero-copy Memory Read Half-Duplex Micro-benchmark_
 `python3 comscribe.py -g 4 -i './scope --benchmark_filter="Comm_ZeroCopy_GPUToGPU_Read.*18.*" -n 0' -s log`
 
-Gives the output:
+Gives the bar-chart for Zero-copy memory transfers:
 <p align="center">
   <img src="/example_outputs/commscope_zcm_read.png" width="320">
 </p>
 
 ### Example: _Comm|Scope Unified Memory Full Duplex Micro-benchmark_
 `python3 comscribe.py -g 4 -i './scope --benchmark_filter="Comm_Demand_Duplex_GPUGPU.*18.*"' -s linear`
+
+Gives two matrices, bytes transferred (left) and number of transfers made (right):
 <p align="center" float="left">
   <img src="/example_outputs/um_num_bytes.png" width="320" />
   <img src="/example_outputs/um_num_times.png" width="320" />
@@ -76,6 +78,7 @@ Gives the output:
 ### Example: _MGBench Full Duplex Micro-benchmark_
 `python3 comscribe.py -g 4 -i './fullduplex' -s linear`
 
+Gives two matrices, bytes transferred (left) and number of transfers made (right):
 <p align="center" float="left">
   <img src="/example_outputs/mgbench_full_duplex_bytes.png" width="320" />
   <img src="/example_outputs/mgbench_full_duplex_times.png" width="320" />
@@ -84,6 +87,7 @@ Gives the output:
 ### Example: _NVIDIA Monte Carlo Simluation of 2D Ising-GPU_
 `python3 comscribe.py -g 4 -i './cuIsing -y 32768 -x 65536 -n 128 -p 16 -d 4 -t 1.5' -s log`
 
+Gives two matrices, bytes transferred (left) and number of transfers made (right):
 <p align="center" float="left">
   <img src="/example_outputs/ising_gpu_num_bytes.png" width="320" />
   <img src="/example_outputs/ising_gpu_num_times.png" width="320" />
