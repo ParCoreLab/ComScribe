@@ -47,7 +47,11 @@ We have used our tool in an NVIDIA V100 DGX2 system with up to 16 GPUs using CUD
     * Half-Duplex with peer access | [GitHub](https://github.com/c3sr/comm_scope/blob/master/src/cudaMemcpyPeerAsync/gpu_to_gpu_peer.cpp)
     * Half-Duplex without peer access | [GitHub](https://github.com/c3sr/comm_scope/blob/master/src/cudaMemcpyPeerAsync/gpu_to_gpu.cpp)
     * Zero-copy Memory (both Read and Write benchmarks) | [GitHub](https://github.com/c3sr/comm_scope/blob/master/src/zerocopy/gpu_to_gpu.cu)
-    Note: In order to run a benchmark with fixed iterations e.g. 100, modify the benchmark where it is Registered in the src code by ```benchmark::RegisterBenchmark(...)->SMALL_ARGS()->Iterations(100);```
+    
+    Note: In order to run a benchmark with fixed iterations e.g. 100, modify the benchmark where it is registered in the src code with 
+    ```
+    benchmark::RegisterBenchmark(...)->SMALL_ARGS()->Iterations(100);
+    ```
 * MGBench | [Github](https://github.com/tbennun/mgbench)
     * Full-Duplex | [GitHub](https://github.com/tbennun/mgbench/blob/master/src/L1/fullduplex.cpp)
     * Scatter-Gather | [GitHub](https://github.com/tbennun/mgbench/blob/master/src/L1/scatter.cpp)
