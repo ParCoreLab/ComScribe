@@ -47,7 +47,7 @@ We have used our tool in an NVIDIA V100 DGX2 system with up to 16 GPUs using CUD
     * Half-Duplex without peer access | [GitHub](https://github.com/c3sr/comm_scope/blob/master/src/cudaMemcpyPeerAsync/gpu_to_gpu.cpp)
     * Zero-copy Memory (both Read and Write benchmarks) | [GitHub](https://github.com/c3sr/comm_scope/blob/master/src/zerocopy/gpu_to_gpu.cu)
     
-    Note: In order to run a benchmark with fixed iterations e.g. 100, in the source code of benchmark, replace it's registration with 
+    Note: In order to run a Comm|Scope benchmark with fixed iterations e.g. 100, in the source code of benchmark, replace it's registration with:
     ```
     benchmark::RegisterBenchmark(...)->SMALL_ARGS()->Iterations(100);
     ```
