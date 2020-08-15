@@ -442,7 +442,7 @@ def plot_comm_matrix(comm_matrix, num_devices, matrix_type, scale='linear'):
     plt.yticks(np.arange(0.5, num_devices + 1, 1), labels=labels)
     plt.tick_params(labelsize=12)
     plt.tight_layout()
-    plt.savefig('{}.png'.format(matrix_type))
+    plt.savefig('{}.pdf'.format(matrix_type))
 
 def plot_bar_chart(matrix, n_groups):
     plt.rcParams["figure.figsize"] = (8,6)
