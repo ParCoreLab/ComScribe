@@ -18,7 +18,7 @@ You will need the following programs:
 
 - [Python](https://www.python.org/): ComScribe is a Python script. It uses several packages listed in [`requirements.txt`](/requirements.txt), which you can install via the command:
 
-`pip3 install requirements.txt`
+`pip3 install -r requirements.txt`
 
 - [nvprof](https://docs.nvidia.com/cuda/profiler-users-guide/index.html#nvprof-overview): ComScribe parses the outputs of NVIDIA's profiler *nvprof*, which is a light-weight command-line profiler available since CUDA 5.
 
