@@ -537,7 +537,6 @@ def main(argv):
     is_nccl = False
     try:
         opts, args = getopt.getopt(argv,"h:i:g:s:n",["app=, num_gpus=, scale=, nccl="])
-        print(opts)
     except getopt.GetoptError:
         print("comscribe.py -g <num_gpus> -i <'./app parameters'> -s <plotting_scale>")
         sys.exit(2)
