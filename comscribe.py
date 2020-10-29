@@ -4,6 +4,7 @@ import math
 import re
 import subprocess
 import sys
+import glob
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
@@ -336,6 +337,26 @@ class H2DCudaMemcpyCommMatrixGenerator():
                             self.num_times_comm_matrix[0][src_id + 1] += 1.0
         return self.num_bytes_comm_matrix, self.num_times_comm_matrix
 
+class NcclCommMatrixGenerator:
+    def __init__(self, num_devices):
+        # Needed headers for H2D memcpy
+        self.headers = ['src', 'dst', 'size']
+        self.num_bytes_comm_matrix = [[0] * num_devices for _ in range(num_devices)]
+        self.num_times_comm_matrix = [[0] * num_devices for _ in range(num_devices)]
+
+    def generate_comm_matrix(self, filepath_prefix="comscribe_nccl_*.csv"):
+        file_paths = glob.glob(filepath_prefix)
+        
+        for file_path in file_paths:
+            with open(file_path) as fp:
+                lines = fp.readlines()
+
+                for line in lines:
+                    src, dst, size = line.split(",")
+                    self.num_bytes_comm_matrix[dst][src] += size
+                    self.num_times_comm_matrix[dst][src] += 1
+        
+        return self.num_bytes_comm_matrix, self.num_times_comm_matrix
 
 class ZeroCopyInfoGenerator():
     def __init__(self, num_devices):
@@ -503,8 +524,10 @@ def merge_matrices(h2d_comm_matrix, p2p_comm_matrix):
 def main(argv):
     num_devices = 0
     scale = ''
+    is_nccl = False
     try:
-        opts, args = getopt.getopt(argv,"h:i:g:s:",["app=, num_gpus=, scale="])
+        opts, args = getopt.getopt(argv,"h:i:g:s:n",["app=, num_gpus=, scale=, nccl="])
+        print(opts)
     except getopt.GetoptError:
         print("comscribe.py -g <num_gpus> -i <'./app parameters'> -s <plotting_scale>")
         sys.exit(2)
@@ -518,7 +541,27 @@ def main(argv):
             num_devices = int(arg)
         elif opt in ("-s", "--scale"):
             scale = arg
+        elif opt in ("-n", "--nccl"):
+            is_nccl = True
     
+    # # Run app with NCCL
+    if(is_nccl):
+        nccl_cmd = "{}".format(application)
+        subprocess.run([nccl_cmd], shell=True)
+
+        nccl_comm = NcclCommMatrixGenerator(num_devices)
+        nccl_num_bytes_comm_matrix, nccl_num_times_comm_matrix = nccl_comm.generate_comm_matrix()
+
+        print("Nccl Memory Bytes: \n", nccl_num_bytes_comm_matrix)
+        print("Nccl Memory Transfers: \n", nccl_num_times_comm_matrix)
+
+        outputfile_nccl_num_bytes_comm_matrix = "nccl_num_bytes_comm_matrix"
+        outputfile_nccl_num_times_comm_matrix = "nccl_num_times_comm_matrix"
+
+        plot_comm_matrix(nccl_num_bytes_comm_matrix, num_devices, outputfile_nccl_num_bytes_comm_matrix, scale)
+        plot_comm_matrix(nccl_num_times_comm_matrix, num_devices, outputfile_nccl_num_times_comm_matrix, scale)
+
+
     # # Run app with GPU-Trace
     gpu_trace_cmd = "nvprof --print-gpu-trace --csv --log-file gpu_trace.csv {}".format(application)
     subprocess.run([gpu_trace_cmd], shell=True)
