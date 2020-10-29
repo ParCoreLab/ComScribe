@@ -5,6 +5,7 @@ import re
 import subprocess
 import sys
 import glob
+import os
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
@@ -525,6 +526,11 @@ def merge_matrices(h2d_comm_matrix, p2p_comm_matrix):
 
     return h2d_comm_matrix
 
+def remove_existing_files(file_paths):
+    if len(file_paths) > 0:
+        for file in file_paths:
+            os.remove(file)
+
 def main(argv):
     num_devices = 0
     scale = ''
@@ -550,6 +556,8 @@ def main(argv):
     
     # # Run app with NCCL
     if(is_nccl):
+        file_paths = glob.glob("comscribe_nccl_*.csv")
+        remove_existing_files(file_paths)
         nccl_cmd = "{}".format(application)
         subprocess.run([nccl_cmd], shell=True)
 
