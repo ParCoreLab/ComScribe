@@ -353,8 +353,8 @@ class NcclCommMatrixGenerator:
 
                 for line in lines:
                     src, dst, size = line.split(",")
-                    self.num_bytes_comm_matrix[dst][src] += size
-                    self.num_times_comm_matrix[dst][src] += 1
+                    self.num_bytes_comm_matrix[int(dst)][int(src)] += int(size)
+                    self.num_times_comm_matrix[int(dst)][int(src)] += 1
         
         return self.num_bytes_comm_matrix, self.num_times_comm_matrix
 
@@ -456,11 +456,15 @@ def plot_comm_matrix(comm_matrix, num_devices, matrix_type, scale='linear'):
     plt.gca().invert_yaxis()
     x1,x2,y1,y2 = plt.axis()
     labels = ['H',0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
-  
-    plt.xticks(np.arange(0.5, num_devices + 1, 1), labels=labels)
+
+    if matrix_type == "nccl_num_bytes_comm_matrix" or matrix_type == "nccl_num_times_comm_matrix":
+        plt.xticks(np.arange(0.5, num_devices, 1), labels=labels[1:])
+        plt.yticks(np.arange(0.5, num_devices, 1), labels=labels[1:])
+    else:
+        plt.xticks(np.arange(0.5, num_devices + 1, 1), labels=labels)
+        plt.yticks(np.arange(0.5, num_devices + 1, 1), labels=labels)
     plt.xlabel("GPU IDs", size=24)
     plt.ylabel("GPU IDs", size=24)
-    plt.yticks(np.arange(0.5, num_devices + 1, 1), labels=labels)
     plt.tick_params(labelsize=12)
     plt.tight_layout()
     plt.savefig('{}.pdf'.format(matrix_type))
@@ -541,7 +545,7 @@ def main(argv):
             num_devices = int(arg)
         elif opt in ("-s", "--scale"):
             scale = arg
-        elif opt in ("-n", "--nccl"):
+        if opt in ("-n", "--nccl"):
             is_nccl = True
     
     # # Run app with NCCL
