@@ -28,7 +28,7 @@ No further installation is required.
 
 To obtain the communication matrices of your application (`app`):
 
-1. Put `comscribe.py` in the same directory with `app`
+1. Put `comscribe.py and nccl_intercept.so` in the same directory with `app`
 2. `python3 comscribe.py -g <num_gpus> -s log|linear -i <cmd_to_run>`
     1. `-g` lets our tool know how many GPUs will be used, however note that if the application to be run requires such a parameter too, it must be explicitly specified (see `-i` below).
     2. `-s` can be `log` for log scale or `linear` for linear scale for the output figures.
