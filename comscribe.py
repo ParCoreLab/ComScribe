@@ -340,7 +340,6 @@ class H2DCudaMemcpyCommMatrixGenerator():
 
 class NcclCommMatrixGenerator:
     def __init__(self, num_devices):
-        # Needed headers for H2D memcpy
         self.headers = ['src', 'dst', 'size']
         self.num_bytes_comm_matrix = [[0] * num_devices for _ in range(num_devices)]
         self.num_times_comm_matrix = [[0] * num_devices for _ in range(num_devices)]
@@ -538,7 +537,7 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv,"h:i:g:s:n",["app=, num_gpus=, scale=, nccl="])
     except getopt.GetoptError:
-        print("comscribe.py -g <num_gpus> -i <'./app parameters'> -s <plotting_scale>")
+        print("comscribe.py -g <num_gpus> -i <'./app parameters'> -s <plotting_scale> -n <to-enable-nccl>")
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
