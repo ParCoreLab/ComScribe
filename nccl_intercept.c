@@ -197,7 +197,9 @@ ncclResult_t ncclReduce(const void* sendbuff, void* recvbuff, size_t count, nccl
 	    int N = (int)sizeof(datatype) * (int)count;
 
 	    for(int i = 0; i < P; i++) {
-		fprintf(fptr,"%d,%d,%d\n",i, (i + 1) % P, N / P);
+	    	if(device != root){
+	    	    fprintf(fptr,"%d,%d,%d\n",i, (i + 1) % P, N / P);
+	    	}
 	    }	
 	    fprintf(fptr,"\n");
 	
