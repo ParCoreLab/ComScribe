@@ -171,7 +171,7 @@ ncclResult_t ncclBroadcast(const void* sendbuff, void* recvbuff, size_t count, n
 	    int N = (int)sizeof(datatype) * (int)count;
 	    
 	    for(int i = 0; i < P; i++) {
-		if((device + 1) % P != root) {
+		if((i + 1) % P != root) {
                     fprintf(fptr,"%d,%d,%d\n", i, (i+1) % P, N);
 		}
             }   
@@ -181,6 +181,16 @@ ncclResult_t ncclBroadcast(const void* sendbuff, void* recvbuff, size_t count, n
 	}
         return result;
 }
+
+/*
+  if (prevRank == root) {
+      prims.send(thisInput+offset, nelem);
+  } else if (rank == root) {
+      prims.recvReduceCopy(thisInput+offset, thisOutput+offset, nelem);
+  } else {
+      prims.recvReduceSend(thisInput+offset, nelem);
+  }
+ */
 
 ncclResult_t ncclReduce(const void* sendbuff, void* recvbuff, size_t count, ncclDataType_t datatype, ncclRedOp_t op, int root, ncclComm_t comm, cudaStream_t stream) {
 	ncclResult_t result = realNcclReduce(sendbuff, recvbuff, count, datatype, op, root, comm, stream);
@@ -197,12 +207,10 @@ ncclResult_t ncclReduce(const void* sendbuff, void* recvbuff, size_t count, nccl
 	    int N = (int)sizeof(datatype) * (int)count;
 
 	    for(int i = 0; i < P; i++) {
-	    	if(device != root){
-	    	    fprintf(fptr,"%d,%d,%d\n",i, (i + 1) % P, N / P);
-	    	}
+		if(i != root) {
+		    fprintf(fptr,"%d,%d,%d\n",i, (i + 1) % P, N / P);
+		}	
 	    }	
-	    fprintf(fptr,"\n");
-	
 	    fclose(fptr);
 	}else {
 	    printf("NCCL failure\n");
