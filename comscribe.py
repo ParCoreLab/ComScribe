@@ -4,6 +4,8 @@ import math
 import re
 import subprocess
 import sys
+import glob
+import os
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
@@ -336,6 +338,25 @@ class H2DCudaMemcpyCommMatrixGenerator():
                             self.num_times_comm_matrix[0][src_id + 1] += 1.0
         return self.num_bytes_comm_matrix, self.num_times_comm_matrix
 
+class NcclCommMatrixGenerator:
+    def __init__(self, num_devices):
+        self.headers = ['src', 'dst', 'size']
+        self.num_bytes_comm_matrix = [[0] * num_devices for _ in range(num_devices)]
+        self.num_times_comm_matrix = [[0] * num_devices for _ in range(num_devices)]
+
+    def generate_comm_matrix(self, filepath_prefix="comscribe_nccl_*.csv"):
+        file_paths = glob.glob(filepath_prefix)
+        
+        for file_path in file_paths:
+            with open(file_path) as fp:
+                lines = fp.readlines()
+
+                for line in lines:
+                    src, dst, size = line.split(",")
+                    self.num_bytes_comm_matrix[int(dst)][int(src)] += int(size)
+                    self.num_times_comm_matrix[int(dst)][int(src)] += 1
+        
+        return self.num_bytes_comm_matrix, self.num_times_comm_matrix
 
 class ZeroCopyInfoGenerator():
     def __init__(self, num_devices):
@@ -435,11 +456,15 @@ def plot_comm_matrix(comm_matrix, num_devices, matrix_type, scale='linear'):
     plt.gca().invert_yaxis()
     x1,x2,y1,y2 = plt.axis()
     labels = ['H',0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
-  
-    plt.xticks(np.arange(0.5, num_devices + 1, 1), labels=labels)
+
+    if matrix_type == "nccl_num_bytes_comm_matrix" or matrix_type == "nccl_num_times_comm_matrix":
+        plt.xticks(np.arange(0.5, num_devices, 1), labels=labels[1:])
+        plt.yticks(np.arange(0.5, num_devices, 1), labels=labels[1:])
+    else:
+        plt.xticks(np.arange(0.5, num_devices + 1, 1), labels=labels)
+        plt.yticks(np.arange(0.5, num_devices + 1, 1), labels=labels)
     plt.xlabel("GPU IDs", size=24)
     plt.ylabel("GPU IDs", size=24)
-    plt.yticks(np.arange(0.5, num_devices + 1, 1), labels=labels)
     plt.tick_params(labelsize=12)
     plt.tight_layout()
     plt.savefig('{}.pdf'.format(matrix_type))
@@ -500,13 +525,19 @@ def merge_matrices(h2d_comm_matrix, p2p_comm_matrix):
 
     return h2d_comm_matrix
 
+def remove_existing_files(file_paths):
+    if len(file_paths) > 0:
+        for file in file_paths:
+            os.remove(file)
+
 def main(argv):
     num_devices = 0
     scale = ''
+    is_nccl = False
     try:
-        opts, args = getopt.getopt(argv,"h:i:g:s:",["app=, num_gpus=, scale="])
+        opts, args = getopt.getopt(argv,"h:i:g:s:n",["app=, num_gpus=, scale=, nccl="])
     except getopt.GetoptError:
-        print("comscribe.py -g <num_gpus> -i <'./app parameters'> -s <plotting_scale>")
+        print("comscribe.py -g <num_gpus> -i <'./app parameters'> -s <plotting_scale> -n <to-enable-nccl>")
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
@@ -518,65 +549,86 @@ def main(argv):
             num_devices = int(arg)
         elif opt in ("-s", "--scale"):
             scale = arg
+        if opt in ("-n", "--nccl"):
+            is_nccl = True
     
-    # # Run app with GPU-Trace
-    gpu_trace_cmd = "nvprof --print-gpu-trace --csv --log-file gpu_trace.csv {}".format(application)
-    subprocess.run([gpu_trace_cmd], shell=True)
-    gpu_trace_file = "gpu_trace.csv"
+    # # Run app with NCCL
+    if(is_nccl):
+        file_paths = glob.glob("comscribe_nccl_*.csv")
+        remove_existing_files(file_paths)
+        nccl_cmd = "{}".format(application)
+        subprocess.run([nccl_cmd], shell=True)
 
-    # # Run app with Metric Trace
-    metric_trace_cmd = "nvprof --print-gpu-trace --metrics nvlink_user_data_received,nvlink_user_data_transmitted,sysmem_read_bytes,sysmem_write_bytes --csv --log-file metric_trace.csv {}".format(application)
-    subprocess.run([metric_trace_cmd], shell=True)
+        nccl_comm = NcclCommMatrixGenerator(num_devices)
+        nccl_num_bytes_comm_matrix, nccl_num_times_comm_matrix = nccl_comm.generate_comm_matrix()
 
-    metric_trace_file = "metric_trace.csv"
-    
-     # # Unified Memory
-    h2d_um_memcpy_comm = H2DUnifiedMemoryCommMatrixGenerator(num_devices)
-    h2d_um_num_bytes_comm_matrix, h2d_um_num_times_comm_matrix = h2d_um_memcpy_comm.generate_comm_matrix(gpu_trace_file)
-    p2p_um_memcpy_comm = P2PUnifiedMemoryCommMatrixGenerator(num_devices)
-    p2p_um_num_bytes_comm_matrix, p2p_um_num_times_comm_matrix = p2p_um_memcpy_comm.generate_comm_matrix(gpu_trace_file)
-    
-    all_um_num_bytes_comm_matrix = merge_matrices(h2d_um_num_bytes_comm_matrix, p2p_um_num_bytes_comm_matrix)
-    all_um_num_times_comm_matrix = merge_matrices(h2d_um_num_times_comm_matrix, p2p_um_num_times_comm_matrix)
-    
-    if  max(map(max, all_um_num_bytes_comm_matrix)) != 0 and max(map(max, all_um_num_times_comm_matrix)) !=0:
-        print("Unified Memory Bytes: \n", all_um_num_bytes_comm_matrix)
-        print("Unified Memory Transfers: \n", all_um_num_times_comm_matrix)
+        print("Nccl Memory Bytes: \n", nccl_num_bytes_comm_matrix)
+        print("Nccl Memory Transfers: \n", nccl_num_times_comm_matrix)
 
-        outputfile_um_num_bytes_comm_matrix = "um_num_bytes_comm_matrix"
-        outputfile_um_num_times_comm_matrix = "um_num_times_comm_matrix"
+        outputfile_nccl_num_bytes_comm_matrix = "nccl_num_bytes_comm_matrix"
+        outputfile_nccl_num_times_comm_matrix = "nccl_num_times_comm_matrix"
 
-        plot_comm_matrix(all_um_num_bytes_comm_matrix, num_devices, outputfile_um_num_bytes_comm_matrix, scale)
-        plot_comm_matrix(all_um_num_times_comm_matrix, num_devices, outputfile_um_num_times_comm_matrix, scale)
+        plot_comm_matrix(nccl_num_bytes_comm_matrix, num_devices, outputfile_nccl_num_bytes_comm_matrix, scale)
+        plot_comm_matrix(nccl_num_times_comm_matrix, num_devices, outputfile_nccl_num_times_comm_matrix, scale)
+    else:
+        # # Run app with GPU-Trace
+        gpu_trace_cmd = "nvprof --print-gpu-trace --csv --log-file gpu_trace.csv {}".format(application)
+        subprocess.run([gpu_trace_cmd], shell=True)
+        gpu_trace_file = "gpu_trace.csv"
 
-    # # Explicit Transfers
-    h2d_et_memcpy_comm = H2DCudaMemcpyCommMatrixGenerator(num_devices)
-    h2d_et_num_bytes_comm_matrix, h2d_et_num_times_comm_matrix = h2d_et_memcpy_comm.generate_comm_matrix(gpu_trace_file)
-    p2p_et_memcpy_comm = P2PCudaMemcpyCommMatrixGenerator(num_devices)
-    p2p_et_num_bytes_comm_matrix, p2p_et_num_times_comm_matrix = p2p_et_memcpy_comm.generate_comm_matrix(gpu_trace_file)
-    
-    all_et_num_bytes_comm_matrix = merge_matrices(h2d_et_num_bytes_comm_matrix, p2p_et_num_bytes_comm_matrix)
-    all_et_num_times_comm_matrix = merge_matrices(h2d_et_num_times_comm_matrix, p2p_et_num_times_comm_matrix)
+        # # Run app with Metric Trace
+        metric_trace_cmd = "nvprof --print-gpu-trace --metrics nvlink_user_data_received,nvlink_user_data_transmitted,sysmem_read_bytes,sysmem_write_bytes --csv --log-file metric_trace.csv {}".format(application)
+        subprocess.run([metric_trace_cmd], shell=True)
 
-    if max(map(max, all_et_num_bytes_comm_matrix)) != 0 and max(map(max, all_et_num_times_comm_matrix)) !=0:
-        print("Explicit Transfers Bytes: \n", all_et_num_bytes_comm_matrix)
-        print("Explicit Transfers Transfers: \n", all_et_num_times_comm_matrix)
+        metric_trace_file = "metric_trace.csv"
         
-        outputfile_et_num_bytes_comm_matrix = "et_num_bytes_comm_matrix"
-        outputfile_et_num_times_comm_matrix = "et_num_times_comm_matrix"
-    
-        plot_comm_matrix(all_et_num_bytes_comm_matrix, num_devices, outputfile_et_num_bytes_comm_matrix, scale)
-        plot_comm_matrix(all_et_num_times_comm_matrix, num_devices, outputfile_et_num_times_comm_matrix, scale)
+        # # Unified Memory
+        h2d_um_memcpy_comm = H2DUnifiedMemoryCommMatrixGenerator(num_devices)
+        h2d_um_num_bytes_comm_matrix, h2d_um_num_times_comm_matrix = h2d_um_memcpy_comm.generate_comm_matrix(gpu_trace_file)
+        p2p_um_memcpy_comm = P2PUnifiedMemoryCommMatrixGenerator(num_devices)
+        p2p_um_num_bytes_comm_matrix, p2p_um_num_times_comm_matrix = p2p_um_memcpy_comm.generate_comm_matrix(gpu_trace_file)
+        
+        all_um_num_bytes_comm_matrix = merge_matrices(h2d_um_num_bytes_comm_matrix, p2p_um_num_bytes_comm_matrix)
+        all_um_num_times_comm_matrix = merge_matrices(h2d_um_num_times_comm_matrix, p2p_um_num_times_comm_matrix)
+        
+        if  max(map(max, all_um_num_bytes_comm_matrix)) != 0 and max(map(max, all_um_num_times_comm_matrix)) !=0:
+            print("Unified Memory Bytes: \n", all_um_num_bytes_comm_matrix)
+            print("Unified Memory Transfers: \n", all_um_num_times_comm_matrix)
 
-    # # Zero-Copy Memory Transfers
-    all_zc_comm = ZeroCopyInfoGenerator(num_devices)
-    all_zc_num_bytes_comm_matrix, all_zc_num_times_comm_matrix = all_zc_comm.generate_comm_matrix(metric_trace_file)
+            outputfile_um_num_bytes_comm_matrix = "um_num_bytes_comm_matrix"
+            outputfile_um_num_times_comm_matrix = "um_num_times_comm_matrix"
 
-    if max(map(max, all_zc_num_bytes_comm_matrix)) != 0 and max(map(max, all_zc_num_times_comm_matrix)) !=0:
-        print("ZeroCopy Memory Bytes: \n", all_zc_num_bytes_comm_matrix)
-        print("ZeroCopy Memory Transfers: \n", all_zc_num_times_comm_matrix)
-        plot_bar_chart(all_zc_num_bytes_comm_matrix, num_devices)
-        plot_bar_chart(all_zc_num_times_comm_matrix, num_devices)
+            plot_comm_matrix(all_um_num_bytes_comm_matrix, num_devices, outputfile_um_num_bytes_comm_matrix, scale)
+            plot_comm_matrix(all_um_num_times_comm_matrix, num_devices, outputfile_um_num_times_comm_matrix, scale)
+
+        # # Explicit Transfers
+        h2d_et_memcpy_comm = H2DCudaMemcpyCommMatrixGenerator(num_devices)
+        h2d_et_num_bytes_comm_matrix, h2d_et_num_times_comm_matrix = h2d_et_memcpy_comm.generate_comm_matrix(gpu_trace_file)
+        p2p_et_memcpy_comm = P2PCudaMemcpyCommMatrixGenerator(num_devices)
+        p2p_et_num_bytes_comm_matrix, p2p_et_num_times_comm_matrix = p2p_et_memcpy_comm.generate_comm_matrix(gpu_trace_file)
+        
+        all_et_num_bytes_comm_matrix = merge_matrices(h2d_et_num_bytes_comm_matrix, p2p_et_num_bytes_comm_matrix)
+        all_et_num_times_comm_matrix = merge_matrices(h2d_et_num_times_comm_matrix, p2p_et_num_times_comm_matrix)
+
+        if max(map(max, all_et_num_bytes_comm_matrix)) != 0 and max(map(max, all_et_num_times_comm_matrix)) !=0:
+            print("Explicit Transfers Bytes: \n", all_et_num_bytes_comm_matrix)
+            print("Explicit Transfers Transfers: \n", all_et_num_times_comm_matrix)
+            
+            outputfile_et_num_bytes_comm_matrix = "et_num_bytes_comm_matrix"
+            outputfile_et_num_times_comm_matrix = "et_num_times_comm_matrix"
+        
+            plot_comm_matrix(all_et_num_bytes_comm_matrix, num_devices, outputfile_et_num_bytes_comm_matrix, scale)
+            plot_comm_matrix(all_et_num_times_comm_matrix, num_devices, outputfile_et_num_times_comm_matrix, scale)
+
+        # # Zero-Copy Memory Transfers
+        all_zc_comm = ZeroCopyInfoGenerator(num_devices)
+        all_zc_num_bytes_comm_matrix, all_zc_num_times_comm_matrix = all_zc_comm.generate_comm_matrix(metric_trace_file)
+
+        if max(map(max, all_zc_num_bytes_comm_matrix)) != 0 and max(map(max, all_zc_num_times_comm_matrix)) !=0:
+            print("ZeroCopy Memory Bytes: \n", all_zc_num_bytes_comm_matrix)
+            print("ZeroCopy Memory Transfers: \n", all_zc_num_times_comm_matrix)
+            plot_bar_chart(all_zc_num_bytes_comm_matrix, num_devices)
+            plot_bar_chart(all_zc_num_times_comm_matrix, num_devices)
 
 
 if __name__ == "__main__":
