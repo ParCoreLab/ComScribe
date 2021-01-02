@@ -2,6 +2,7 @@
 
 #include <dlfcn.h>
 #include <stdio.h>
+#include <sys/time.h>
 #include <stdlib.h>
 #include <cuda_runtime.h>
 #include "nccl.h"
@@ -129,9 +130,11 @@ static ncclResult_t realNcclReduceScatter(const void* sendbuff, void* recvbuff, 
  *  Total: Each gpu sends 2*((N/P)×(P-1)) bytes to the next gpu.
  */
 ncclResult_t ncclAllReduce(const void* sendbuff, void* recvbuff, size_t count, ncclDataType_t datatype, ncclRedOp_t op, ncclComm_t comm, cudaStream_t stream) {
-	
+	struct timeval start, stop;
+        gettimeofday(&start, NULL);
 	ncclResult_t result = realNcclAllReduce(sendbuff, recvbuff, count, datatype, op, comm, stream);
-	
+	gettimeofday(&stop, NULL);
+
 	int device;
         ncclCommCuDevice(comm, &device);
 
@@ -145,7 +148,7 @@ ncclResult_t ncclAllReduce(const void* sendbuff, void* recvbuff, size_t count, n
 	    int N = (int)sizeof(datatype) * (int)count;
             
 	    for(int i = 0; i < P; i++) {
-            	fprintf(fptr,"%d,%d,%d\n",i, (i + 1) % P, (2 * N * (P - 1)) / P );
+            	fprintf(fptr,"%d,%d,%d,%ld,%ld\n",i, (i + 1) % P, (2 * N * (P - 1)) / P, start.tv_usec, stop.tv_usec);
 	    } 
 
             fclose(fptr);
@@ -156,8 +159,11 @@ ncclResult_t ncclAllReduce(const void* sendbuff, void* recvbuff, size_t count, n
 }
 
 ncclResult_t ncclBroadcast(const void* sendbuff, void* recvbuff, size_t count, ncclDataType_t datatype, int root, ncclComm_t comm, cudaStream_t stream){
+	struct timeval start, stop;
+        gettimeofday(&start, NULL);
 	ncclResult_t result = realNcclBroadcast(sendbuff, recvbuff, count, datatype, root, comm, stream);
-	
+	gettimeofday(&stop, NULL);
+
 	int device;
 	ncclCommCuDevice(comm, &device);
 
@@ -172,7 +178,7 @@ ncclResult_t ncclBroadcast(const void* sendbuff, void* recvbuff, size_t count, n
 	    
 	    for(int i = 0; i < P; i++) {
 		if((i + 1) % P != root) {
-                    fprintf(fptr,"%d,%d,%d\n", i, (i+1) % P, N);
+                    fprintf(fptr,"%d,%d,%d,%ld,%ld\n", i, (i+1) % P, N, start.tv_usec, stop.tv_usec);
 		}
             }   
             fclose(fptr);
@@ -193,8 +199,11 @@ ncclResult_t ncclBroadcast(const void* sendbuff, void* recvbuff, size_t count, n
  */
 
 ncclResult_t ncclReduce(const void* sendbuff, void* recvbuff, size_t count, ncclDataType_t datatype, ncclRedOp_t op, int root, ncclComm_t comm, cudaStream_t stream) {
+	struct timeval start, stop;
+        gettimeofday(&start, NULL);
 	ncclResult_t result = realNcclReduce(sendbuff, recvbuff, count, datatype, op, root, comm, stream);
-	
+	gettimeofday(&stop, NULL);
+
 	int device;
 	ncclCommCuDevice(comm, &device);
 	
@@ -208,7 +217,7 @@ ncclResult_t ncclReduce(const void* sendbuff, void* recvbuff, size_t count, nccl
 
 	    for(int i = 0; i < P; i++) {
 		if(i != root) {
-		    fprintf(fptr,"%d,%d,%d\n",i, (i + 1) % P, N / P);
+		    fprintf(fptr,"%d,%d,%d,%ld,%ld\n",i, (i + 1) % P, N / P, start.tv_usec, stop.tv_usec);
 		}	
 	    }	
 	    fclose(fptr);
@@ -223,8 +232,11 @@ ncclResult_t ncclReduce(const void* sendbuff, void* recvbuff, size_t count, nccl
  * Each gpu sends (N/P) elements and it does it (P-1) times
  */
 ncclResult_t ncclAllGather(const void* sendbuff, void* recvbuff, size_t sendcount, ncclDataType_t datatype, ncclComm_t comm, cudaStream_t stream) {
+	struct timeval start, stop;
+        gettimeofday(&start, NULL);
 	ncclResult_t result = realNcclAllGather(sendbuff, recvbuff, sendcount, datatype, comm, stream);
-	
+	gettimeofday(&stop, NULL);
+
 	int device;
 	ncclCommCuDevice(comm, &device);
 
@@ -238,7 +250,7 @@ ncclResult_t ncclAllGather(const void* sendbuff, void* recvbuff, size_t sendcoun
             int N = (int)sizeof(datatype) * (int)sendcount * P;
             
 	    for(int i = 0; i < P; i++) {
-            	fprintf(fptr,"%d,%d,%d\n",i, (i + 1) % P,  N * (P - 1) / P );
+            	fprintf(fptr,"%d,%d,%d,%ld,%ld\n",i, (i + 1) % P,  N * (P - 1) / P, start.tv_usec, stop.tv_usec);
 	    }
 
             fclose(fptr);
@@ -252,8 +264,11 @@ ncclResult_t ncclAllGather(const void* sendbuff, void* recvbuff, size_t sendcoun
  * Each gpu sends (N/P) elements and it does it (P-1) times
  */
 ncclResult_t ncclReduceScatter(const void* sendbuff, void* recvbuff, size_t recvcount, ncclDataType_t datatype, ncclRedOp_t op, ncclComm_t comm, cudaStream_t stream) {
+	struct timeval start, stop;
+        gettimeofday(&start, NULL);
 	ncclResult_t result = realNcclReduceScatter(sendbuff, recvbuff, recvcount, datatype, op, comm, stream);
-	
+	gettimeofday(&stop, NULL);
+
 	int device;
 	ncclCommCuDevice(comm, &device);
 
@@ -267,7 +282,7 @@ ncclResult_t ncclReduceScatter(const void* sendbuff, void* recvbuff, size_t recv
             int N = (int)sizeof(datatype) * (int)recvcount * P;
 
 	    for(int i = 0; i < P; i++) {
-            	fprintf(fptr,"%d,%d,%d\n",i, (i + 1) % P,  N * (P - 1) / P );
+            	fprintf(fptr,"%d,%d,%d,%ld,%ld\n",i, (i + 1) % P,  N * (P - 1) / P, start.tv_usec, stop.tv_usec);
 	    }
 
             fclose(fptr);
