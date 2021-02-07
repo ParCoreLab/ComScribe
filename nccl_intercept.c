@@ -131,9 +131,11 @@ static ncclResult_t realNcclReduceScatter(const void* sendbuff, void* recvbuff, 
  */
 ncclResult_t ncclAllReduce(const void* sendbuff, void* recvbuff, size_t count, ncclDataType_t datatype, ncclRedOp_t op, ncclComm_t comm, cudaStream_t stream) {
 	struct timeval start, stop;
-        gettimeofday(&start, NULL);
+    gettimeofday(&start, NULL);
 	ncclResult_t result = realNcclAllReduce(sendbuff, recvbuff, count, datatype, op, comm, stream);
 	gettimeofday(&stop, NULL);
+    double elapsed = (stop.tv_sec - start.tv_sec) + 
+              ((stop.tv_usec - start.tv_usec)/1000000.0);
 
 	int device;
         ncclCommCuDevice(comm, &device);
@@ -148,7 +150,7 @@ ncclResult_t ncclAllReduce(const void* sendbuff, void* recvbuff, size_t count, n
 	    int N = (int)sizeof(datatype) * (int)count;
             
 	    for(int i = 0; i < P; i++) {
-            	fprintf(fptr,"%d,%d,%d,%ld,%ld\n",i, (i + 1) % P, (2 * N * (P - 1)) / P, start.tv_usec, stop.tv_usec);
+            	fprintf(fptr,"%d,%d,%d,%f\n",i, (i + 1) % P, (2 * N * (P - 1)) / P, elapsed);
 	    } 
 
             fclose(fptr);
@@ -163,6 +165,8 @@ ncclResult_t ncclBroadcast(const void* sendbuff, void* recvbuff, size_t count, n
         gettimeofday(&start, NULL);
 	ncclResult_t result = realNcclBroadcast(sendbuff, recvbuff, count, datatype, root, comm, stream);
 	gettimeofday(&stop, NULL);
+	double elapsed = (stop.tv_sec - start.tv_sec) + 
+              ((stop.tv_usec - start.tv_usec)/1000000.0);
 
 	int device;
 	ncclCommCuDevice(comm, &device);
@@ -178,7 +182,7 @@ ncclResult_t ncclBroadcast(const void* sendbuff, void* recvbuff, size_t count, n
 	    
 	    for(int i = 0; i < P; i++) {
 		if((i + 1) % P != root) {
-                    fprintf(fptr,"%d,%d,%d,%ld,%ld\n", i, (i+1) % P, N, start.tv_usec, stop.tv_usec);
+                    fprintf(fptr,"%d,%d,%d,%f\n", i, (i+1) % P, N, elapsed);
 		}
             }   
             fclose(fptr);
@@ -203,6 +207,8 @@ ncclResult_t ncclReduce(const void* sendbuff, void* recvbuff, size_t count, nccl
         gettimeofday(&start, NULL);
 	ncclResult_t result = realNcclReduce(sendbuff, recvbuff, count, datatype, op, root, comm, stream);
 	gettimeofday(&stop, NULL);
+	double elapsed = (stop.tv_sec - start.tv_sec) + 
+              ((stop.tv_usec - start.tv_usec)/1000000.0);
 
 	int device;
 	ncclCommCuDevice(comm, &device);
@@ -217,7 +223,7 @@ ncclResult_t ncclReduce(const void* sendbuff, void* recvbuff, size_t count, nccl
 
 	    for(int i = 0; i < P; i++) {
 		if(i != root) {
-		    fprintf(fptr,"%d,%d,%d,%ld,%ld\n",i, (i + 1) % P, N / P, start.tv_usec, stop.tv_usec);
+		    fprintf(fptr,"%d,%d,%d,%f\n",i, (i + 1) % P, N / P, elapsed);
 		}	
 	    }	
 	    fclose(fptr);
@@ -236,6 +242,8 @@ ncclResult_t ncclAllGather(const void* sendbuff, void* recvbuff, size_t sendcoun
         gettimeofday(&start, NULL);
 	ncclResult_t result = realNcclAllGather(sendbuff, recvbuff, sendcount, datatype, comm, stream);
 	gettimeofday(&stop, NULL);
+	double elapsed = (stop.tv_sec - start.tv_sec) + 
+              ((stop.tv_usec - start.tv_usec)/1000000.0);
 
 	int device;
 	ncclCommCuDevice(comm, &device);
@@ -250,7 +258,7 @@ ncclResult_t ncclAllGather(const void* sendbuff, void* recvbuff, size_t sendcoun
             int N = (int)sizeof(datatype) * (int)sendcount * P;
             
 	    for(int i = 0; i < P; i++) {
-            	fprintf(fptr,"%d,%d,%d,%ld,%ld\n",i, (i + 1) % P,  N * (P - 1) / P, start.tv_usec, stop.tv_usec);
+            	fprintf(fptr,"%d,%d,%d,%f\n",i, (i + 1) % P,  N * (P - 1) / P, elapsed);
 	    }
 
             fclose(fptr);
@@ -268,6 +276,8 @@ ncclResult_t ncclReduceScatter(const void* sendbuff, void* recvbuff, size_t recv
         gettimeofday(&start, NULL);
 	ncclResult_t result = realNcclReduceScatter(sendbuff, recvbuff, recvcount, datatype, op, comm, stream);
 	gettimeofday(&stop, NULL);
+	double elapsed = (stop.tv_sec - start.tv_sec) + 
+              ((stop.tv_usec - start.tv_usec)/1000000.0);
 
 	int device;
 	ncclCommCuDevice(comm, &device);
@@ -282,7 +292,7 @@ ncclResult_t ncclReduceScatter(const void* sendbuff, void* recvbuff, size_t recv
             int N = (int)sizeof(datatype) * (int)recvcount * P;
 
 	    for(int i = 0; i < P; i++) {
-            	fprintf(fptr,"%d,%d,%d,%ld,%ld\n",i, (i + 1) % P,  N * (P - 1) / P, start.tv_usec, stop.tv_usec);
+            	fprintf(fptr,"%d,%d,%d,%f\n",i, (i + 1) % P,  N * (P - 1) / P, elapsed);
 	    }
 
             fclose(fptr);

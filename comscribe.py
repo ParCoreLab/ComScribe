@@ -67,36 +67,39 @@ class P2PCudaMemcpyCommMatrixGenerator():
         splitted_line = clean_line.split(',')
         return splitted_line
 
-    def generate_comm_matrix(self, filepath):
+    def generate_comm_matrix(self, filepath_prefix):
         multiply_by = 1
-        find_headers = True
-        with open(filepath) as fp:
-            line = fp.readline()
-            while line:
+        file_paths = glob.glob(filepath_prefix)
+        
+        for file_path in file_paths:
+            find_headers = True
+            with open(file_path) as fp:
                 line = fp.readline()
-                stripped_line = line.strip()
-                if find_headers:
-                    if self.has_all_headers(stripped_line):
+                while line:
+                    line = fp.readline()
+                    stripped_line = line.strip()
+                    if find_headers:
+                        if self.has_all_headers(stripped_line):
+                            splitted_line = self._clean_and_split_line(stripped_line)
+                            name_to_index = self.get_indices_of_headers(splitted_line)
+                            num_of_elems = self.get_num_of_elems(splitted_line)
+                            line = fp.readline()
+                            size_type = self.get_size_type(line, name_to_index)
+                            if size_type == "KB":
+                                multiply_by = 1024
+                            elif size_type == "MB":
+                                multiply_by = 1024 * 1024
+                            elif size_type == "GB":
+                                multiply_by = 1024 * 1024 * 1024
+                            find_headers = False
+                    else:
                         splitted_line = self._clean_and_split_line(stripped_line)
-                        name_to_index = self.get_indices_of_headers(splitted_line)
-                        num_of_elems = self.get_num_of_elems(splitted_line)
-                        line = fp.readline()
-                        size_type = self.get_size_type(line, name_to_index)
-                        if size_type == "KB":
-                            multiply_by = 1024
-                        elif size_type == "MB":
-                            multiply_by = 1024 * 1024
-                        elif size_type == "GB":
-                            multiply_by = 1024 * 1024 * 1024
-                        find_headers = False
-                else:
-                    splitted_line = self._clean_and_split_line(stripped_line)
-                    comm_size, src_dev, dst_dev = self.get_size_and_gpu_ids(splitted_line, name_to_index, num_of_elems)
-                    if comm_size and src_dev and dst_dev:
-                        src_id = int(re.findall('\((.*?)\)', src_dev)[0])
-                        dst_id = int(re.findall('\((.*?)\)', dst_dev)[0])
-                        self.num_bytes_comm_matrix[dst_id][src_id] += float(comm_size) * multiply_by
-                        self.num_times_comm_matrix[dst_id][src_id] += 1.0
+                        comm_size, src_dev, dst_dev = self.get_size_and_gpu_ids(splitted_line, name_to_index, num_of_elems)
+                        if comm_size and src_dev and dst_dev:
+                            src_id = int(re.findall('\((.*?)\)', src_dev)[0])
+                            dst_id = int(re.findall('\((.*?)\)', dst_dev)[0])
+                            self.num_bytes_comm_matrix[dst_id][src_id] += float(comm_size) * multiply_by
+                            self.num_times_comm_matrix[dst_id][src_id] += 1.0
         return self.num_bytes_comm_matrix, self.num_times_comm_matrix
 
 
@@ -143,36 +146,39 @@ class P2PUnifiedMemoryCommMatrixGenerator():
         splitted_line = clean_line.split(',')
         return splitted_line
 
-    def generate_comm_matrix(self, filepath):
+    def generate_comm_matrix(self, filepath_prefix):
         multiply_by = 1
-        find_headers = True
-        with open(filepath) as fp:
-            line = fp.readline()
-            while line:
+        file_paths = glob.glob(filepath_prefix)
+        
+        for file_path in file_paths:
+            find_headers = True
+            with open(file_path) as fp:
                 line = fp.readline()
-                stripped_line = line.strip()
-                if find_headers:
-                    if self.has_all_headers(stripped_line):
+                while line:
+                    line = fp.readline()
+                    stripped_line = line.strip()
+                    if find_headers:
+                        if self.has_all_headers(stripped_line):
+                            splitted_line = self._clean_and_split_line(stripped_line)
+                            name_to_index = self.get_indices_of_headers(splitted_line)
+                            num_of_elems = self.get_num_of_elems(splitted_line)
+                            line = fp.readline()
+                            size_type = self.get_size_type(line, name_to_index)
+                            if size_type == "KB":
+                                multiply_by = 1024
+                            elif size_type == "MB":
+                                multiply_by = 1024 * 1024
+                            elif size_type == "GB":
+                                multiply_by = 1024 * 1024 * 1024
+                            find_headers = False
+                    else:
                         splitted_line = self._clean_and_split_line(stripped_line)
-                        name_to_index = self.get_indices_of_headers(splitted_line)
-                        num_of_elems = self.get_num_of_elems(splitted_line)
-                        line = fp.readline()
-                        size_type = self.get_size_type(line, name_to_index)
-                        if size_type == "KB":
-                            multiply_by = 1024
-                        elif size_type == "MB":
-                            multiply_by = 1024 * 1024
-                        elif size_type == "GB":
-                            multiply_by = 1024 * 1024 * 1024
-                        find_headers = False
-                else:
-                    splitted_line = self._clean_and_split_line(stripped_line)
-                    comm_size, src_dev, dst_dev = self.get_size_and_gpu_ids(splitted_line, name_to_index, num_of_elems)
-                    if comm_size:
-                        src_id = int(re.findall('\((.*?)\)', src_dev)[0])
-                        dst_id = int(re.findall('\((.*?)\)', dst_dev)[0])
-                        self.num_bytes_comm_matrix[dst_id][src_id] += float(comm_size) * multiply_by
-                        self.num_times_comm_matrix[dst_id][src_id] += 1.0
+                        comm_size, src_dev, dst_dev = self.get_size_and_gpu_ids(splitted_line, name_to_index, num_of_elems)
+                        if comm_size:
+                            src_id = int(re.findall('\((.*?)\)', src_dev)[0])
+                            dst_id = int(re.findall('\((.*?)\)', dst_dev)[0])
+                            self.num_bytes_comm_matrix[dst_id][src_id] += float(comm_size) * multiply_by
+                            self.num_times_comm_matrix[dst_id][src_id] += 1.0
         return self.num_bytes_comm_matrix, self.num_times_comm_matrix
 
 class H2DUnifiedMemoryCommMatrixGenerator():
@@ -220,40 +226,43 @@ class H2DUnifiedMemoryCommMatrixGenerator():
         splitted_line = clean_line.split(',')
         return splitted_line
 
-    def generate_comm_matrix(self, filepath):
+    def generate_comm_matrix(self, filepath_prefix):
         multiply_by = 1
-        find_headers = True
-        with open(filepath) as fp:
-            line = fp.readline()
-            while line:
+        file_paths = glob.glob(filepath_prefix)
+        
+        for file_path in file_paths:
+            find_headers = True
+            with open(file_path) as fp:
                 line = fp.readline()
-                stripped_line = line.strip()
-                if find_headers:
-                    if self.has_all_headers(stripped_line):
+                while line:
+                    line = fp.readline()
+                    stripped_line = line.strip()
+                    if find_headers:
+                        if self.has_all_headers(stripped_line):
+                            splitted_line = self._clean_and_split_line(stripped_line)
+                            name_to_index = self.get_indices_of_headers(splitted_line)
+                            num_of_elems = self.get_num_of_elems(splitted_line)
+                            line = fp.readline()
+                            size_type = self.get_size_type(line, name_to_index)
+                            if size_type == "KB":
+                                multiply_by = 1024
+                            elif size_type == "MB":
+                                multiply_by = 1024 * 1024
+                            elif size_type == "GB":
+                                multiply_by = 1024 * 1024 * 1024
+                            find_headers = False
+                    else:
                         splitted_line = self._clean_and_split_line(stripped_line)
-                        name_to_index = self.get_indices_of_headers(splitted_line)
-                        num_of_elems = self.get_num_of_elems(splitted_line)
-                        line = fp.readline()
-                        size_type = self.get_size_type(line, name_to_index)
-                        if size_type == "KB":
-                            multiply_by = 1024
-                        elif size_type == "MB":
-                            multiply_by = 1024 * 1024
-                        elif size_type == "GB":
-                            multiply_by = 1024 * 1024 * 1024
-                        find_headers = False
-                else:
-                    splitted_line = self._clean_and_split_line(stripped_line)
-                    comm_size, src_dev, dst_dev = self.get_size_and_gpu_ids(splitted_line, name_to_index, num_of_elems)
-                    if comm_size:
-                        if not src_dev and dst_dev:
-                            dst_id = int(re.findall('\((.*?)\)', dst_dev)[0])
-                            self.num_bytes_comm_matrix[dst_id + 1][0] += float(comm_size) * multiply_by
-                            self.num_times_comm_matrix[dst_id + 1][0] += 1.0
-                        elif src_dev and not dst_dev:
-                            src_id = int(re.findall('\((.*?)\)', src_dev)[0])
-                            self.num_bytes_comm_matrix[0][src_id + 1] += float(comm_size) * multiply_by
-                            self.num_times_comm_matrix[0][src_id + 1] += 1.0
+                        comm_size, src_dev, dst_dev = self.get_size_and_gpu_ids(splitted_line, name_to_index, num_of_elems)
+                        if comm_size:
+                            if not src_dev and dst_dev:
+                                dst_id = int(re.findall('\((.*?)\)', dst_dev)[0])
+                                self.num_bytes_comm_matrix[dst_id + 1][0] += float(comm_size) * multiply_by
+                                self.num_times_comm_matrix[dst_id + 1][0] += 1.0
+                            elif src_dev and not dst_dev:
+                                src_id = int(re.findall('\((.*?)\)', src_dev)[0])
+                                self.num_bytes_comm_matrix[0][src_id + 1] += float(comm_size) * multiply_by
+                                self.num_times_comm_matrix[0][src_id + 1] += 1.0
         return self.num_bytes_comm_matrix, self.num_times_comm_matrix
 
 
@@ -302,40 +311,44 @@ class H2DCudaMemcpyCommMatrixGenerator():
         splitted_line = clean_line.split(',')
         return splitted_line
 
-    def generate_comm_matrix(self, filepath):
+    def generate_comm_matrix(self, filepath_prefix):
         multiply_by = 1
         find_headers = True
-        with open(filepath) as fp:
-            line = fp.readline()
-            while line:
+        file_paths = glob.glob(filepath_prefix)
+        
+        for file_path in file_paths:
+            find_headers = True
+            with open(file_path) as fp:
                 line = fp.readline()
-                stripped_line = line.strip()
-                if find_headers:
-                    if self.has_all_headers(stripped_line):
+                while line:
+                    line = fp.readline()
+                    stripped_line = line.strip()
+                    if find_headers:
+                        if self.has_all_headers(stripped_line):
+                            splitted_line = self._clean_and_split_line(stripped_line)
+                            name_to_index = self.get_indices_of_headers(splitted_line)
+                            num_of_elems = self.get_num_of_elems(splitted_line)
+                            line = fp.readline()
+                            size_type = self.get_size_type(line, name_to_index)
+                            if size_type == "KB":
+                                multiply_by = 1024
+                            elif size_type == "MB":
+                                multiply_by = 1024 * 1024
+                            elif size_type == "GB":
+                                multiply_by = 1024 * 1024 * 1024
+                            find_headers = False
+                    else:
                         splitted_line = self._clean_and_split_line(stripped_line)
-                        name_to_index = self.get_indices_of_headers(splitted_line)
-                        num_of_elems = self.get_num_of_elems(splitted_line)
-                        line = fp.readline()
-                        size_type = self.get_size_type(line, name_to_index)
-                        if size_type == "KB":
-                            multiply_by = 1024
-                        elif size_type == "MB":
-                            multiply_by = 1024 * 1024
-                        elif size_type == "GB":
-                            multiply_by = 1024 * 1024 * 1024
-                        find_headers = False
-                else:
-                    splitted_line = self._clean_and_split_line(stripped_line)
-                    comm_size, src_dev, dst_dev = self.get_size_and_gpu_ids(splitted_line, name_to_index, num_of_elems)
-                    if comm_size:
-                        if not src_dev and dst_dev:
-                            dst_id = int(re.findall('\((.*?)\)', dst_dev)[0])
-                            self.num_bytes_comm_matrix[dst_id + 1][0] += float(comm_size) * multiply_by
-                            self.num_times_comm_matrix[dst_id + 1][0] += 1.0
-                        elif src_dev and not dst_dev:
-                            src_id = int(re.findall('\((.*?)\)', src_dev)[0])
-                            self.num_bytes_comm_matrix[0][src_id + 1] += float(comm_size) * multiply_by
-                            self.num_times_comm_matrix[0][src_id + 1] += 1.0
+                        comm_size, src_dev, dst_dev = self.get_size_and_gpu_ids(splitted_line, name_to_index, num_of_elems)
+                        if comm_size:
+                            if not src_dev and dst_dev:
+                                dst_id = int(re.findall('\((.*?)\)', dst_dev)[0])
+                                self.num_bytes_comm_matrix[dst_id + 1][0] += float(comm_size) * multiply_by
+                                self.num_times_comm_matrix[dst_id + 1][0] += 1.0
+                            elif src_dev and not dst_dev:
+                                src_id = int(re.findall('\((.*?)\)', src_dev)[0])
+                                self.num_bytes_comm_matrix[0][src_id + 1] += float(comm_size) * multiply_by
+                                self.num_times_comm_matrix[0][src_id + 1] += 1.0
         return self.num_bytes_comm_matrix, self.num_times_comm_matrix
 
 class NcclCommMatrixGenerator:
@@ -352,7 +365,7 @@ class NcclCommMatrixGenerator:
                 lines = fp.readlines()
 
                 for line in lines:
-                    src, dst, size = line.split(",")
+                    src, dst, size, time = line.split(",")
                     self.num_bytes_comm_matrix[int(dst)][int(src)] += int(size)
                     self.num_times_comm_matrix[int(dst)][int(src)] += 1
         
@@ -525,6 +538,13 @@ def merge_matrices(h2d_comm_matrix, p2p_comm_matrix):
 
     return h2d_comm_matrix
 
+def merge_matrices_for_intranode(h2d_comm_matrix, p2p_comm_matrix):
+    for x in range(0, len(p2p_comm_matrix)):
+        for y in range(0, len(p2p_comm_matrix)):
+            h2d_comm_matrix[x + 1][y + 1] = h2d_comm_matrix[x + 1][y + 1] + p2p_comm_matrix[x][y]
+
+    return h2d_comm_matrix
+
 def remove_existing_files(file_paths):
     if len(file_paths) > 0:
         for file in file_paths:
@@ -534,14 +554,15 @@ def main(argv):
     num_devices = 0
     scale = ''
     is_nccl = False
+    preloads = ''
     try:
-        opts, args = getopt.getopt(argv,"h:i:g:s:n",["app=, num_gpus=, scale=, nccl="])
+        opts, args = getopt.getopt(argv,"h:i:g:s:p:n",["app=, num_gpus=, scale=, preload=, nccl="])
     except getopt.GetoptError:
-        print("comscribe.py -g <num_gpus> -i <'./app parameters'> -s <plotting_scale> -n <to-enable-nccl>")
+        print("comscribe.py -g <num_gpus> -i <'./app parameters'> -s <plotting_scale> -n <to-enable-nccl> -p <NCCL-Preloads>")
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print("comscribe.py -g <num_gpus> -i <'./app parameters'> -s <plotting_scale>")
+            print("comscribe.py -g <num_gpus> -i <'./app parameters'> -s <plotting_scale> -n <to-enable-nccl> -p <NCCL-Preloads>")
             sys.exit()
         elif opt in ("-i", "--ifile"):
             application = arg
@@ -549,6 +570,8 @@ def main(argv):
             num_devices = int(arg)
         elif opt in ("-s", "--scale"):
             scale = arg
+        elif opt in ("-p", "--preload"):
+            preloads = arg
         if opt in ("-n", "--nccl"):
             is_nccl = True
     
@@ -556,7 +579,7 @@ def main(argv):
     if(is_nccl):
         file_paths = glob.glob("comscribe_nccl_*.csv")
         remove_existing_files(file_paths)
-        nccl_cmd = "{}".format(application)
+        nccl_cmd = "{} {}".format(preloads, application)
         subprocess.run([nccl_cmd], shell=True)
 
         nccl_comm = NcclCommMatrixGenerator(num_devices)
@@ -570,11 +593,14 @@ def main(argv):
 
         plot_comm_matrix(nccl_num_bytes_comm_matrix, num_devices, outputfile_nccl_num_bytes_comm_matrix, scale)
         plot_comm_matrix(nccl_num_times_comm_matrix, num_devices, outputfile_nccl_num_times_comm_matrix, scale)
-    else:
+
         # # Run app with GPU-Trace
-        gpu_trace_cmd = "nvprof --print-gpu-trace --csv --log-file gpu_trace.csv {}".format(application)
+        file_paths = glob.glob("gpu_trace_*.csv")
+        remove_existing_files(file_paths)
+
+        gpu_trace_cmd = "nvprof --print-gpu-trace --profile-child-processes --csv --log-file gpu_trace_%p.csv {}".format(application)
         subprocess.run([gpu_trace_cmd], shell=True)
-        gpu_trace_file = "gpu_trace.csv"
+        gpu_trace_file = "gpu_trace_*.csv"
 
         # # Run app with Metric Trace
         metric_trace_cmd = "nvprof --print-gpu-trace --metrics nvlink_user_data_received,nvlink_user_data_transmitted,sysmem_read_bytes,sysmem_write_bytes --csv --log-file metric_trace.csv {}".format(application)
@@ -629,6 +655,17 @@ def main(argv):
             print("ZeroCopy Memory Transfers: \n", all_zc_num_times_comm_matrix)
             plot_bar_chart(all_zc_num_bytes_comm_matrix, num_devices)
             plot_bar_chart(all_zc_num_times_comm_matrix, num_devices)
+
+        # # Intra-node Memory Transfers
+        outputfile_intra_node_num_bytes_comm_matrix = "intra_node_num_bytes_comm_matrix"
+        outputfile_intra_node_num_times_comm_matrix = "intra_node_num_times_comm_matrix"
+        all_intra_node_num_bytes_comm_matrix = merge_matrices_for_intranode(all_et_num_bytes_comm_matrix, nccl_num_bytes_comm_matrix) 
+        all_intra_node_num_transfers_comm_matrix = merge_matrices_for_intranode(all_et_num_times_comm_matrix, nccl_num_times_comm_matrix)
+        if max(map(max, all_intra_node_num_bytes_comm_matrix)) != 0 and max(map(max, all_intra_node_num_transfers_comm_matrix)) !=0:
+            print("Intra-node Memory Bytes: \n", all_intra_node_num_bytes_comm_matrix)
+            print("Intra-node Memory Transfers: \n", all_intra_node_num_transfers_comm_matrix)
+            plot_comm_matrix(all_intra_node_num_bytes_comm_matrix, num_devices, outputfile_intra_node_num_bytes_comm_matrix, scale)
+            plot_comm_matrix(all_intra_node_num_transfers_comm_matrix, num_devices, outputfile_intra_node_num_times_comm_matrix, scale)
 
 
 if __name__ == "__main__":
