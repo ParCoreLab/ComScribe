@@ -18,26 +18,53 @@ You will need the following programs:
 
 - [Python](https://www.python.org/): ComScribe is a Python script. It uses several packages listed in [`requirements.txt`](/requirements.txt), which you can install via the command:
 
-`pip3 install -r requirements.txt`
+```Bash
+pip3 install -r requirements.txt
+```
 
 - [nvprof](https://docs.nvidia.com/cuda/profiler-users-guide/index.html#nvprof-overview): ComScribe parses the outputs of NVIDIA's profiler *nvprof*, which is a light-weight command-line profiler available since CUDA 5.
+
+- [NCCL](nccl)[Optional]. ComScribe modifies NCCL library to profile collective communication primitives. If your application does not use any collective operations, you don't have to perform this step.
+
+```bash
+cd nccl && make -j src.build
+```
 
 No further installation is required.
 
 ## Usage
 
+### P2P Communication Profiling
+
 To obtain the communication matrices of your application (`app`):
 
-1. Put `comscribe.py and nccl_intercept.so` in the same directory with `app`
-2. `python3 comscribe.py -g <num_gpus> -s log|linear -i <cmd_to_run>`
-    1. `-g` lets our tool know how many GPUs will be used, however note that if the application to be run requires such a parameter too, it must be explicitly specified (see `-i` below).
-    2. `-s` can be `log` for log scale or `linear` for linear scale for the output figures.
-    3. `-i` takes the input command as a string such as: `-i './app --foo 20 --bar 5'`
+```bash
+python3 comscribe.py -g <num_gpus> -s log|linear -i <cmd_to_run>
+```
+
+`-g` lets our tool know how many GPUs will be used, however note that if the application to be run requires such a parameter too, it must be explicitly specified (see `-i` below).
+
+`-s` can be `log` for log scale or `linear` for linear scale for the output figures.
+
+`-i` takes the input command as a string such as: `-i './app --foo 20 --bar 5'`
     
-3. The communication matrix for a communication type is only generated if it is detected, e.g. if there are no Unified Memory transfers then there will not be any output regarding Unified Memory transfers. For the types of communication detected, the generated figures are saved as PDF files in the directory of the script.
+
+The communication matrix for a communication type is only generated if it is detected, e.g. if there are no Unified Memory transfers then there will not be any output regarding Unified Memory transfers. For the types of communication detected, the generated figures are saved as PDF files in the directory of the script.
+
+### Collective Communication Profiling
+
+```bash
+python3 comscribe.py -n -c <collective_type> -g <num_gpus> -s log|linear -i <cmd_to_run>
+```
+
+`-n` enables the profiling of collectives.
+
+`-c` represents the collective to be profiled (if not specified, all collectives will be profiled by default). Options: broadcast, reduce, allgather, allreduce, reducescatter
 
 ## Benchmarks
+
 We have used our tool in an NVIDIA V100 DGX2 system with up to 16 GPUs using CUDA v10.0.130 for the following benchmarks:
+
 * NVIDIA Monte Carlo Simluation of 2D Ising-GPU | [GitHub](https://github.com/NVIDIA/ising-gpu/tree/master/optimized)
 * NVIDIA Multi-GPU Jacobi Solver | [GitHub](https://github.com/NVIDIA/multi-gpu-programming-models/blob/master/single_threaded_copy/jacobi.cu)
 * Comm|Scope | [Paper](https://dl.acm.org/doi/10.1145/3297663.3310299) | [GitHub](https://github.com/c3sr/comm_scope)
