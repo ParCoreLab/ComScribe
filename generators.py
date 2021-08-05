@@ -8,7 +8,7 @@ class P2PCudaMemcpyCommMatrixGenerator():
         self.headers = ['SrcMemType', 'DstMemType', 'Size', 'Src Dev', 'Dst Dev', 'Name', 'Device']
         self.num_bytes_comm_matrix = [[0] * num_devices for _ in range(num_devices)]
         self.num_times_comm_matrix = [[0] * num_devices for _ in range(num_devices)]
-    
+
     def has_all_headers(self, line):
         for header in self.headers:
             if not re.search(header, line):
@@ -27,12 +27,12 @@ class P2PCudaMemcpyCommMatrixGenerator():
             src_mem_type = splitted_line[name_to_index['SrcMemType']]
             dst_mem_type = splitted_line[name_to_index['DstMemType']]
             name = splitted_line[name_to_index['Name']]
-            
+
             if src_mem_type == "Device" and dst_mem_type == "Device":
                 size = splitted_line[name_to_index['Size']]
                 src_index = splitted_line[name_to_index['Src Dev']]
                 dst_index = splitted_line[name_to_index['Dst Dev']]
-            
+
             if "[CUDA memcpy DtoD]" in name:
                 size = splitted_line[name_to_index['Size']]
                 src_index = splitted_line[name_to_index['Device']]
@@ -47,7 +47,7 @@ class P2PCudaMemcpyCommMatrixGenerator():
         splitted_line = self._clean_and_split_line(line)
         size_type = splitted_line[name_to_index['Size']]
         return size_type
-    
+
     def _clean_and_split_line(self, line):
         clean_line = line.replace('"', '')
         splitted_line = clean_line.split(',')
@@ -92,7 +92,7 @@ class P2PUnifiedMemoryCommMatrixGenerator():
         self.headers = ['Device', 'Unified Memory', 'Name']
         self.num_bytes_comm_matrix = [[0] * num_devices for _ in range(num_devices)]
         self.num_times_comm_matrix = [[0] * num_devices for _ in range(num_devices)]
-    
+
     def has_all_headers(self, line):
         for header in self.headers:
             if not re.search(header, line):
@@ -109,7 +109,7 @@ class P2PUnifiedMemoryCommMatrixGenerator():
         size, src_index, dst_index = None, None, None
         if len(splitted_line) == num_of_elems + 1:
             mem_transfer_type = splitted_line[name_to_index['Name'] + 1]
-            if mem_transfer_type == "[Unified Memory Memcpy DtoD]": 
+            if mem_transfer_type == "[Unified Memory Memcpy DtoD]":
                 size = splitted_line[name_to_index['Unified Memory'] + 1]
                 src_index = splitted_line[name_to_index['Device']]
                 dst_index = splitted_line[name_to_index['Device'] + 1]
@@ -122,7 +122,7 @@ class P2PUnifiedMemoryCommMatrixGenerator():
         splitted_line = self._clean_and_split_line(line)
         size_type = splitted_line[name_to_index['Unified Memory']]
         return size_type
-    
+
     def _clean_and_split_line(self, line):
         clean_line = line.replace('"', '')
         splitted_line = clean_line.split(',')
@@ -167,7 +167,7 @@ class H2DUnifiedMemoryCommMatrixGenerator():
         self.headers = ['Device', 'Unified Memory', 'Name']
         self.num_bytes_comm_matrix = [[0] * (num_devices + 1) for _ in range(num_devices + 1)]
         self.num_times_comm_matrix = [[0] * (num_devices + 1) for _ in range(num_devices + 1)]
-    
+
     def has_all_headers(self, line):
         for header in self.headers:
             if not re.search(header, line):
@@ -184,10 +184,10 @@ class H2DUnifiedMemoryCommMatrixGenerator():
         size, src_index, dst_index = None, None, None
         if len(splitted_line) == num_of_elems:
             mem_transfer_type = splitted_line[name_to_index['Name']]
-            if mem_transfer_type == "[Unified Memory Memcpy HtoD]": 
+            if mem_transfer_type == "[Unified Memory Memcpy HtoD]":
                 size = splitted_line[name_to_index['Unified Memory']]
                 dst_index = splitted_line[name_to_index['Device']]
-            elif mem_transfer_type == "[Unified Memory Memcpy DtoH]": 
+            elif mem_transfer_type == "[Unified Memory Memcpy DtoH]":
                 size = splitted_line[name_to_index['Unified Memory']]
                 src_index = splitted_line[name_to_index['Device']]
         return size, src_index, dst_index
@@ -199,7 +199,7 @@ class H2DUnifiedMemoryCommMatrixGenerator():
         splitted_line = self._clean_and_split_line(line)
         size_type = splitted_line[name_to_index['Unified Memory']]
         return size_type
-    
+
     def _clean_and_split_line(self, line):
         clean_line = line.replace('"', '')
         splitted_line = clean_line.split(',')
@@ -248,7 +248,7 @@ class H2DCudaMemcpyCommMatrixGenerator():
         self.headers = ['Device', 'Size', 'Name']
         self.num_bytes_comm_matrix = [[0] * (num_devices + 1) for _ in range(num_devices + 1)]
         self.num_times_comm_matrix = [[0] * (num_devices + 1) for _ in range(num_devices + 1)]
-    
+
     def has_all_headers(self, line):
         for header in self.headers:
             if not re.search(header, line):
@@ -265,10 +265,10 @@ class H2DCudaMemcpyCommMatrixGenerator():
         size, src_index, dst_index = None, None, None
         if len(splitted_line) == num_of_elems:
             mem_transfer_type = splitted_line[name_to_index['Name']]
-            if mem_transfer_type == "[CUDA memcpy HtoD]": 
+            if mem_transfer_type == "[CUDA memcpy HtoD]":
                 size = splitted_line[name_to_index['Size']]
                 dst_index = splitted_line[name_to_index['Device']]
-            elif mem_transfer_type == "[CUDA memcpy DtoH]": 
+            elif mem_transfer_type == "[CUDA memcpy DtoH]":
                 size = splitted_line[name_to_index['Size']]
                 src_index = splitted_line[name_to_index['Device']]
         return size, src_index, dst_index
@@ -280,7 +280,7 @@ class H2DCudaMemcpyCommMatrixGenerator():
         splitted_line = self._clean_and_split_line(line)
         size_type = splitted_line[name_to_index['Size']]
         return size_type
-    
+
     def _clean_and_split_line(self, line):
         clean_line = line.replace('"', '')
         splitted_line = clean_line.split(',')
@@ -330,16 +330,16 @@ class NcclCommMatrixGenerator():
 
     def generate_comm_matrix(self, filepath_prefix="comscribe_*_*.csv"):
         file_paths = glob.glob(filepath_prefix)
-        
+
         for file_path in file_paths:
             with open(file_path) as fp:
                 lines = fp.readlines()
 
                 for line in lines:
-                    src, dst, size = line.split(",")
+                    nodeName, commId, deviceId, src, dst, size, algo = line.split(",")
                     self.num_bytes_comm_matrix[int(dst)][int(src)] += int(size)
                     self.num_times_comm_matrix[int(dst)][int(src)] += 1
-        
+
         return self.num_bytes_comm_matrix, self.num_times_comm_matrix
 
 class ZeroCopyInfoGenerator():
@@ -347,7 +347,7 @@ class ZeroCopyInfoGenerator():
         # Needed headers for zerocopy memory
         self.headers = [
             'Device', 'nvlink_user_data_received',
-            'nvlink_user_data_transmitted', 'sysmem_read_bytes', 
+            'nvlink_user_data_transmitted', 'sysmem_read_bytes',
             'sysmem_write_bytes']
 
         self.num_bytes_comm_matrix = [[0] * (4) for _ in range(num_devices)]
@@ -377,7 +377,7 @@ class ZeroCopyInfoGenerator():
 
     def get_num_of_elems(self, splitted_line):
         return len(splitted_line)
-    
+
     def _clean_and_split_line(self, line):
         clean_line = line.replace('"', '')
         splitted_line = clean_line.split(',')
