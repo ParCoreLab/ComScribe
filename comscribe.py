@@ -107,7 +107,7 @@ def merge_matrices(h2d_comm_matrix, p2p_comm_matrix):
 
 def main(argv):
     args = parse_args()
-    
+
     # # Run app with NCCL
     if(args.nccl):
         check_nccl(NCCL_SHARED_LIBRARY_PATH)
@@ -130,7 +130,7 @@ def main(argv):
 
         plot_comm_matrix(nccl_num_bytes_comm_matrix, args.num_gpus, outputfile_nccl_num_bytes_comm_matrix, args.scale)
         plot_comm_matrix(nccl_num_times_comm_matrix, args.num_gpus, outputfile_nccl_num_times_comm_matrix, args.scale)
-    
+
     # # Run app with GPU-Trace
     gpu_trace_cmd = "nvprof --print-gpu-trace --csv --log-file gpu_trace.csv {}".format(args.ifile)
     subprocess.run([gpu_trace_cmd], shell=True)
@@ -141,16 +141,16 @@ def main(argv):
     subprocess.run([metric_trace_cmd], shell=True)
 
     metric_trace_file = "metric_trace.csv"
-    
+
     # # Unified Memory
     h2d_um_memcpy_comm = H2DUnifiedMemoryCommMatrixGenerator(args.num_gpus)
     h2d_um_num_bytes_comm_matrix, h2d_um_num_times_comm_matrix = h2d_um_memcpy_comm.generate_comm_matrix(gpu_trace_file)
     p2p_um_memcpy_comm = P2PUnifiedMemoryCommMatrixGenerator(args.num_gpus)
     p2p_um_num_bytes_comm_matrix, p2p_um_num_times_comm_matrix = p2p_um_memcpy_comm.generate_comm_matrix(gpu_trace_file)
-    
+
     all_um_num_bytes_comm_matrix = merge_matrices(h2d_um_num_bytes_comm_matrix, p2p_um_num_bytes_comm_matrix)
     all_um_num_times_comm_matrix = merge_matrices(h2d_um_num_times_comm_matrix, p2p_um_num_times_comm_matrix)
-    
+
     if  max(map(max, all_um_num_bytes_comm_matrix)) != 0 and max(map(max, all_um_num_times_comm_matrix)) !=0:
         print("Unified Memory Bytes: \n", all_um_num_bytes_comm_matrix)
         print("Unified Memory Transfers: \n", all_um_num_times_comm_matrix)
@@ -166,17 +166,17 @@ def main(argv):
     h2d_et_num_bytes_comm_matrix, h2d_et_num_times_comm_matrix = h2d_et_memcpy_comm.generate_comm_matrix(gpu_trace_file)
     p2p_et_memcpy_comm = P2PCudaMemcpyCommMatrixGenerator(args.num_gpus)
     p2p_et_num_bytes_comm_matrix, p2p_et_num_times_comm_matrix = p2p_et_memcpy_comm.generate_comm_matrix(gpu_trace_file)
-    
+
     all_et_num_bytes_comm_matrix = merge_matrices(h2d_et_num_bytes_comm_matrix, p2p_et_num_bytes_comm_matrix)
     all_et_num_times_comm_matrix = merge_matrices(h2d_et_num_times_comm_matrix, p2p_et_num_times_comm_matrix)
 
     if max(map(max, all_et_num_bytes_comm_matrix)) != 0 and max(map(max, all_et_num_times_comm_matrix)) !=0:
         print("Explicit Transfers Bytes: \n", all_et_num_bytes_comm_matrix)
         print("Explicit Transfers Transfers: \n", all_et_num_times_comm_matrix)
-        
+
         outputfile_et_num_bytes_comm_matrix = "et_num_bytes_comm_matrix"
         outputfile_et_num_times_comm_matrix = "et_num_times_comm_matrix"
-    
+
         plot_comm_matrix(all_et_num_bytes_comm_matrix, args.num_gpus, outputfile_et_num_bytes_comm_matrix, args.scale)
         plot_comm_matrix(all_et_num_times_comm_matrix, args.num_gpus, outputfile_et_num_times_comm_matrix, args.scale)
 
@@ -193,7 +193,7 @@ def main(argv):
         # # Intra-node Memory Transfers
         outputfile_intra_node_num_bytes_comm_matrix = "intra_node_num_bytes_comm_matrix"
         outputfile_intra_node_num_times_comm_matrix = "intra_node_num_times_comm_matrix"
-        all_intra_node_num_bytes_comm_matrix = merge_matrices_for_intranode(all_et_num_bytes_comm_matrix, nccl_num_bytes_comm_matrix) 
+        all_intra_node_num_bytes_comm_matrix = merge_matrices_for_intranode(all_et_num_bytes_comm_matrix, nccl_num_bytes_comm_matrix)
         all_intra_node_num_transfers_comm_matrix = merge_matrices_for_intranode(all_et_num_times_comm_matrix, nccl_num_times_comm_matrix)
         if max(map(max, all_intra_node_num_bytes_comm_matrix)) != 0 and max(map(max, all_intra_node_num_transfers_comm_matrix)) !=0:
             print("Intra-node Memory Bytes: \n", all_intra_node_num_bytes_comm_matrix)
