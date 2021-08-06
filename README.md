@@ -14,6 +14,16 @@
    
 ## Installation
 
+You can directly execute install.sh script 
+
+```
+./install.sh
+```
+
+OR
+
+You can install it manually.
+
 You will need the following programs:
 
 - [Python](https://www.python.org/): ComScribe is a Python script. It uses several packages listed in [`requirements.txt`](/requirements.txt), which you can install via the command:
