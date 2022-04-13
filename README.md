@@ -132,4 +132,7 @@ Gives two matrices, bytes transferred (left) and number of transfers made (right
 
 
 ## Publication:
-To be published as: _Akthar, P., Tezcan, E., Qararyah, F.M., and Unat, D. "ComScribe: Identifying Intra-node GPU Communication"_
+
+* Akhtar, P., Tezcan, E., Qararyah, F.M., Unat, D. (2021). ComScribe: Identifying Intra-node GPU Communication. In: Wolf, F., Gao, W. (eds) Benchmarking, Measuring, and Optimizing. Bench 2020. Lecture Notes in Computer Science(), vol 12614. Springer, Cham. https://doi.org/10.1007/978-3-030-71058-3_10
+
+* To be published as: Soyturk, M. A., Akhtar, P., Tezcan, E., & Unat, D. "Monitoring Collective Communication Among GPUs". Preprint is available on [Arxiv](https://arxiv.org/abs/2110.10401).
